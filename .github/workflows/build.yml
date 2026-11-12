@@ -70,8 +70,10 @@ jobs:
             if ! gh release view "$release" >/dev/null 2>&1; then
               gh release create "$release" \
                 --title "Latest build" \
-                --notes "Automatic build of every push to ${GITHUB_REF_NAME}." \
-                --prerelease
+                --notes "Automatic build of every push to ${GITHUB_REF_NAME}."
+            else
+              # The in-plugin updater resolves /releases/latest, which skips pre-releases.
+              gh release edit "$release" --prerelease=false
             fi
           fi
           gh release upload "$release" "$jar" --clobber

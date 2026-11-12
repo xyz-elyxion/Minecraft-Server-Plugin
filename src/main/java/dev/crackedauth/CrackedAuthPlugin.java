@@ -8,6 +8,7 @@ import dev.crackedauth.command.LoginCommand;
 import dev.crackedauth.command.LogoutCommand;
 import dev.crackedauth.command.RegisterCommand;
 import dev.crackedauth.listener.AuthGateListener;
+import dev.crackedauth.update.UpdateChecker;
 import dev.crackedauth.util.Messages;
 import dev.crackedauth.world.LimboWorld;
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ public final class CrackedAuthPlugin extends JavaPlugin {
     private Messages messages;
     private AccountStore accountStore;
     private LimboWorld limboWorld;
+    private UpdateChecker updateChecker;
     private AuthManager authManager;
     private BukkitTask promptTask;
 
@@ -33,6 +35,7 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         this.accountStore.load();
         this.limboWorld = new LimboWorld(this);
         this.authManager = new AuthManager(this, accountStore, messages, limboWorld);
+        this.updateChecker = new UpdateChecker(this, messages, getFile());
 
         if (Bukkit.getOnlineMode()) {
             getLogger().warning("This server runs with online-mode=true, so Mojang already authenticates players.");
@@ -45,12 +48,13 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         registerCommand("login", new LoginCommand(authManager, messages));
         registerCommand("logout", new LogoutCommand(authManager, messages));
         registerCommand("changepassword", new ChangePasswordCommand(authManager, messages));
-        registerCommand("authadmin", new AuthAdminCommand(this, authManager, accountStore, messages));
+        registerCommand("authadmin", new AuthAdminCommand(this, authManager, accountStore, messages, updateChecker));
 
         this.promptTask = Bukkit.getScheduler().runTaskTimer(this, authManager::tick, 40L, 40L);
 
         getLogger().info("CrackedAuth enabled with " + accountStore.size() + " stored account(s).");
         limboWorld.loadAtStartup();
+        updateChecker.start();
     }
 
     @Override
@@ -62,6 +66,10 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         if (authManager != null) {
             authManager.shutdown();
         }
+        if (updateChecker != null) {
+            updateChecker.stop();
+            updateChecker.applyOnShutdown();
+        }
     }
 
     /**
@@ -72,6 +80,8 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         messages.reload();
         limboWorld.reload();
         authManager.reloadSettings();
+        updateChecker.reload();
+        updateChecker.start();
     }
 
     private void registerCommand(String name, TabExecutor executor) {

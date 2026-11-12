@@ -43,6 +43,20 @@ settings:
   # restart, stop). Keep this true, otherwise a reload would unlock everyone.
   kick-on-disable: true
 
+update:
+  # Look for a newer CrackedAuth jar on the project's GitHub releases.
+  enabled: true
+  # Repository that publishes releases, as owner/name.
+  repository: xyz-elyxion/Minecraft-Server-Plugin
+  # API base used to look releases up. Change only for GitHub Enterprise or a mirror.
+  api-base: https://api.github.com
+  # Download a newer jar and install it over the loaded plugin when the server
+  # stops, so the next start runs the new version. Nothing is swapped while the
+  # server is running.
+  auto-download: true
+  # Hours between checks. 0 = only check once at startup.
+  check-interval-hours: 6
+
 messages:
   prefix: "<dark_gray>[<gold>CrackedAuth</gold>]</dark_gray> "
 
@@ -93,7 +107,7 @@ messages:
   too-many-attempts: "<red>Too many wrong passwords. Wait <white><seconds>s</white> and try again.</red>"
   plugin-disabled-kick: "<red>The server is restarting. Please log in again shortly.</red>"
 
-  admin-usage: "<yellow>Usage: <white>/authadmin <unregister|forcelogin|setpassword|info|reload></white></yellow>"
+  admin-usage: "<yellow>Usage: <white>/authadmin <unregister|forcelogin|setpassword|info|update|reload></white></yellow>"
   admin-player-not-found: "<red>No account found for <white><player></white>.</red>"
   admin-unregistered: "<green>Deleted the account of <white><player></white>.</green>"
   admin-unregister-target: "<red>Your account was deleted by an administrator.</red>"
@@ -103,3 +117,11 @@ messages:
   admin-setpassword-done: "<green>Set a new password for <white><player></white>.</green>"
   admin-info: "<gray><player></gray> <dark_gray>|</dark_gray> <gray>registered:</gray> <white><registered></white> <dark_gray>|</dark_gray> <gray>last ip:</gray> <white><last-ip></white> <dark_gray>|</dark_gray> <gray>last login:</gray> <white><last-login></white> <dark_gray>|</dark_gray> <gray>online:</gray> <white><online></white> <dark_gray>|</dark_gray> <gray>authenticated:</gray> <white><authenticated></white>"
   admin-reloaded: "<green>Configuration reloaded.</green>"
+
+  update-checking: "<gray>Checking GitHub for a newer CrackedAuth...</gray>"
+  update-none: "<green>You are running the latest CrackedAuth version.</green>"
+  update-available: "<gold>A newer CrackedAuth is available: <white><version></white> (you run <white><current></white>).</gold>"
+  update-downloaded: "<green>Downloaded CrackedAuth <white><version></white> as <white><file></white>; it will be installed when the server stops.</green>"
+  update-download-failed: "<red>Found CrackedAuth <white><version></white> but could not download it: <white><error></white></red>"
+  update-failed: "<red>Update check failed: <white><error></white></red>"
+  update-disabled: "<gray>The update checker is disabled in config.yml.</gray>"

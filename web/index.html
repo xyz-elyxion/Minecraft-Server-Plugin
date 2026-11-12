@@ -221,6 +221,10 @@
             <h3>Session resume</h3>
             <p>Reconnecting from the same address inside the configured window signs the player straight back in.</p>
           </div>
+          <div class="card">
+            <h3>Self-update</h3>
+            <p>Checks GitHub releases, downloads a newer jar and installs it on the next restart. Ships with the latest release; <code>/authadmin update</code> checks on demand.</p>
+          </div>
         </div>
       </section>
 
@@ -237,7 +241,7 @@
               <tr><td><code class="cmd">/login &lt;pw&gt;</code></td><td>Signs in and releases the gate. <span style="color:var(--muted)">[l]</span></td><td>everyone</td></tr>
               <tr><td><code class="cmd">/changepassword</code></td><td>Swaps in a new password after checking the current one. <span style="color:var(--muted)">[cpw]</span></td><td>everyone</td></tr>
               <tr><td><code class="cmd">/logout</code></td><td>Re-locks the session immediately.</td><td>everyone</td></tr>
-              <tr><td><code class="cmd">/authadmin</code></td><td><code>unregister</code>, <code>forcelogin</code>, <code>setpassword</code>, <code>info</code>, <code>reload</code>. <span style="color:var(--muted)">[ca]</span></td><td>operators</td></tr>
+              <tr><td><code class="cmd">/authadmin</code></td><td><code>unregister</code>, <code>forcelogin</code>, <code>setpassword</code>, <code>info</code>, <code>update</code>, <code>reload</code>. <span style="color:var(--muted)">[ca]</span></td><td>operators</td></tr>
             </tbody>
           </table>
         </div>

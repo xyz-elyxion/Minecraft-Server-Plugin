@@ -5,6 +5,7 @@ import dev.crackedauth.auth.AccountStore;
 import dev.crackedauth.auth.AuthManager;
 import dev.crackedauth.auth.PasswordHasher;
 import dev.crackedauth.auth.UserAccount;
+import dev.crackedauth.update.UpdateChecker;
 import dev.crackedauth.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -19,18 +20,21 @@ import java.util.Locale;
 
 public final class AuthAdminCommand implements TabExecutor {
 
-    private static final List<String> SUBCOMMANDS = List.of("unregister", "forcelogin", "setpassword", "info", "reload");
+    private static final List<String> SUBCOMMANDS = List.of("unregister", "forcelogin", "setpassword", "info", "update", "reload");
 
     private final CrackedAuthPlugin plugin;
     private final AuthManager authManager;
     private final AccountStore store;
     private final Messages messages;
+    private final UpdateChecker updateChecker;
 
-    public AuthAdminCommand(CrackedAuthPlugin plugin, AuthManager authManager, AccountStore store, Messages messages) {
+    public AuthAdminCommand(CrackedAuthPlugin plugin, AuthManager authManager, AccountStore store,
+                            Messages messages, UpdateChecker updateChecker) {
         this.plugin = plugin;
         this.authManager = authManager;
         this.store = store;
         this.messages = messages;
+        this.updateChecker = updateChecker;
     }
 
     @Override
@@ -49,6 +53,10 @@ public final class AuthAdminCommand implements TabExecutor {
             case "forcelogin" -> forceLogin(sender, args);
             case "setpassword" -> setPassword(sender, args);
             case "info" -> info(sender, args);
+            case "update" -> {
+                messages.send(sender, "update-checking");
+                updateChecker.checkAsync(sender);
+            }
             case "reload" -> {
                 plugin.reloadPlugin();
                 messages.send(sender, "admin-reloaded");

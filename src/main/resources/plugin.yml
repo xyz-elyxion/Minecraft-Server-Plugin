@@ -23,7 +23,7 @@ commands:
     aliases: [cpw]
   authadmin:
     description: Manage CrackedAuth accounts.
-    usage: /authadmin <unregister|forcelogin|setpassword|info|reload>
+    usage: /authadmin <unregister|forcelogin|setpassword|info|update|reload>
     aliases: [ca]
 
 permissions:
