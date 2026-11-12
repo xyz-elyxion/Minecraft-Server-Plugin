@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------
+# CrackedAuth - password registration / login for offline-mode ("cracked")
+# Minecraft Java 26.3 servers (Paper 26.3 or newer).
+#
+# Messages are rendered with MiniMessage, so <red>, <gold>, <gray>, <bold>
+# and friends all work. Placeholders such as <seconds> are filled in by
+# the plugin at runtime.
+# ---------------------------------------------------------------------------
+
+settings:
+  # Passwords shorter or longer than this are rejected.
+  min-password-length: 8
+  max-password-length: 64
+
+  # Seconds a player may stay connected without logging in. 0 = never kick.
+  login-timeout-seconds: 90
+
+  # Wrong passwords allowed before the player is kicked and locked out.
+  max-attempts: 5
+
+  # Seconds the lockout lasts after too many wrong passwords.
+  lockout-seconds: 300
+
+  session:
+    # Sign players back in automatically when they reconnect.
+    enabled: true
+    # How long the remembered session lasts, in minutes. 0 disables it.
+    minutes: 30
+    # Only resume a session when the player returns from the same IP address.
+    require-same-ip: true
+
+  # Kick players who never logged in when the plugin is disabled (/reload,
+  # restart, stop). Keep this true, otherwise a reload would unlock everyone.
+  kick-on-disable: true
+
+messages:
+  prefix: "<dark_gray>[<gold>CrackedAuth</gold>]</dark_gray> "
+
+  no-permission: "<red>You do not have permission to do that.</red>"
+  player-only: "<red>That command can only be used in game.</red>"
+  already-logged-in: "<gray>You are already logged in.</gray>"
+  login-required: "<red>You must log in first.</red>"
+
+  register-usage: "<yellow>Usage: <white>/register <password> <password></white></yellow>"
+  register-already-registered: "<red>That name is already registered. Use <white>/login <password></white>.</red>"
+  register-password-mismatch: "<red>The two passwords do not match.</red>"
+  register-password-too-short: "<red>Your password must be at least <white><min></white> characters long.</red>"
+  register-password-too-long: "<red>Your password must be at most <white><max></white> characters long.</red>"
+  register-success: "<green>Account created. Welcome aboard!</green>"
+
+  login-usage: "<yellow>Usage: <white>/login <password></white></yellow>"
+  login-not-registered: "<red>That name is not registered. Use <white>/register <password> <password></white>.</red>"
+  login-wrong-password: "<red>Wrong password. <white><attempts></white> attempt(s) left before a lockout.</red>"
+  login-locked: "<red>Too many wrong passwords. Try again in <white><seconds></white>s.</red>"
+  login-success: "<green>Logged in successfully.</green>"
+
+  logout-success: "<gray>You have been logged out. Run <white>/login <password></white> to continue.</gray>"
+  logout-not-logged-in: "<red>You are not logged in.</red>"
+
+  changepassword-usage: "<yellow>Usage: <white>/changepassword <current> <new></white></yellow>"
+  changepassword-wrong: "<red>Your current password is wrong.</red>"
+  changepassword-success: "<green>Password changed.</green>"
+
+  session-resumed: "<green>Welcome back - you were signed in automatically.</green>"
+
+  prompt-register: "<gold>Welcome! Register with <white>/register <password> <password></white>.</gold>"
+  prompt-register-title: "<gold><bold>Register</bold></gold>"
+  prompt-register-subtitle: "<gray>/register <password> <password></gray>"
+  prompt-register-actionbar: "<gold>Register to play - <white><seconds>s</white> left</gold>"
+
+  prompt-login: "<gold>Welcome back! Log in with <white>/login <password></white>.</gold>"
+  prompt-login-title: "<gold><bold>Log in</bold></gold>"
+  prompt-login-subtitle: "<gray>/login <password></gray>"
+  prompt-login-actionbar: "<gold>Log in to play - <white><seconds>s</white> left</gold>"
+
+  auth-success-title: "<green><bold>Authenticated</bold></green>"
+  auth-success-subtitle: "<gray>Have fun!</gray>"
+
+  blocked-chat: "<red>Log in before chatting.</red>"
+  blocked-command: "<red>Log in before using commands.</red>"
+
+  timeout-kick: "<red>You took too long to log in (<white><seconds>s</white>).</red>"
+  too-many-attempts: "<red>Too many wrong passwords. Wait <white><seconds>s</white> and try again.</red>"
+  plugin-disabled-kick: "<red>The server is restarting. Please log in again shortly.</red>"
+
+  admin-usage: "<yellow>Usage: <white>/authadmin <unregister|forcelogin|setpassword|info|reload></white></yellow>"
+  admin-player-not-found: "<red>No account found for <white><player></white>.</red>"
+  admin-unregistered: "<green>Deleted the account of <white><player></white>.</green>"
+  admin-unregister-target: "<red>Your account was deleted by an administrator.</red>"
+  admin-forcelogin-done: "<green>Unlocked <white><player></white>.</green>"
+  admin-forcelogin-already: "<gray><player> is already logged in.</gray>"
+  admin-forcelogin-target: "<green>An administrator unlocked your session.</green>"
+  admin-setpassword-done: "<green>Set a new password for <white><player></white>.</green>"
+  admin-info: "<gray><player></gray> <dark_gray>|</dark_gray> <gray>registered:</gray> <white><registered></white> <dark_gray>|</dark_gray> <gray>last ip:</gray> <white><last-ip></white> <dark_gray>|</dark_gray> <gray>last login:</gray> <white><last-login></white> <dark_gray>|</dark_gray> <gray>online:</gray> <white><online></white> <dark_gray>|</dark_gray> <gray>authenticated:</gray> <white><authenticated></white>"
+  admin-reloaded: "<green>Configuration reloaded.</green>"

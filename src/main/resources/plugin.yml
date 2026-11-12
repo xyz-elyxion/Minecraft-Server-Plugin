@@ -1,0 +1,35 @@
+name: CrackedAuth
+version: '${version}'
+main: dev.crackedauth.CrackedAuthPlugin
+api-version: '26.3'
+description: Password-based registration and login for offline-mode ("cracked") servers.
+author: CrackedAuth
+
+commands:
+  register:
+    description: Create an account on this server.
+    usage: /register <password> <confirm-password>
+    aliases: [reg]
+  login:
+    description: Log in with your password.
+    usage: /login <password>
+    aliases: [l]
+  logout:
+    description: Log out and lock your session again.
+    usage: /logout
+  changepassword:
+    description: Change your account password.
+    usage: /changepassword <current-password> <new-password>
+    aliases: [cpw]
+  authadmin:
+    description: Manage CrackedAuth accounts.
+    usage: /authadmin <unregister|forcelogin|setpassword|info|reload>
+    aliases: [ca]
+
+permissions:
+  crackedauth.use:
+    description: Allows using /register, /login, /logout and /changepassword.
+    default: true
+  crackedauth.admin:
+    description: Allows using /authadmin.
+    default: op
