@@ -1,6 +1,8 @@
 package dev.crackedauth;
 
 import dev.bedwars.BedwarsConfig;
+import dev.bedwars.ai.AiListener;
+import dev.bedwars.ai.AiManager;
 import dev.bedwars.command.BedwarsCommand;
 import dev.bedwars.game.Arena;
 import dev.bedwars.listener.GameListener;
@@ -40,9 +42,11 @@ public final class CrackedAuthPlugin extends JavaPlugin {
     private BedwarsMessages bedwarsMessages;
     private ArenaWorld bedwarsWorld;
     private Arena bedwarsArena;
+    private AiManager bedwarsAi;
 
     private BukkitTask promptTask;
     private BukkitTask bedwarsTask;
+    private BukkitTask bedwarsAiTask;
 
     @Override
     public void onEnable() {
@@ -69,11 +73,16 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         this.bedwarsWorld = new ArenaWorld(this, bedwarsConfig);
         this.bedwarsArena = new Arena(this, bedwarsMessages, bedwarsWorld, bedwarsConfig);
         this.bedwarsArena.load();
+        this.bedwarsAi = new AiManager(this, bedwarsArena, bedwarsConfig);
+        this.bedwarsAi.load();
+        this.bedwarsArena.onGameStart(bedwarsAi::spawnForGame);
         getServer().getPluginManager().registerEvents(new GameListener(bedwarsArena, bedwarsMessages), this);
-        registerCommand("bedwars", new BedwarsCommand(bedwarsArena, bedwarsMessages, this::reloadPlugin));
+        getServer().getPluginManager().registerEvents(new AiListener(bedwarsAi), this);
+        registerCommand("bedwars", new BedwarsCommand(bedwarsArena, bedwarsMessages, bedwarsAi, this::reloadPlugin));
 
         this.promptTask = Bukkit.getScheduler().runTaskTimer(this, authManager::tick, 40L, 40L);
         this.bedwarsTask = Bukkit.getScheduler().runTaskTimer(this, bedwarsArena::tick, 20L, 20L);
+        this.bedwarsAiTask = Bukkit.getScheduler().runTaskTimer(this, bedwarsAi::tick, 10L, 5L);
 
         if (Bukkit.getOnlineMode()) {
             getLogger().warning("This server runs with online-mode=true, so Mojang already authenticates players.");
@@ -81,7 +90,8 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         }
 
         getLogger().info("CrackedAuth enabled with " + accountStore.size() + " stored account(s) and "
-                + bedwarsArena.teams().size() + " Bedwars team(s).");
+                + bedwarsArena.teams().size() + " Bedwars team(s); AI opponents "
+                + (bedwarsAi.enabled() ? "on" : "off") + ".");
         limboWorld.loadAtStartup();
         updateChecker.start();
     }
@@ -96,12 +106,19 @@ public final class CrackedAuthPlugin extends JavaPlugin {
             bedwarsTask.cancel();
             bedwarsTask = null;
         }
+        if (bedwarsAiTask != null) {
+            bedwarsAiTask.cancel();
+            bedwarsAiTask = null;
+        }
         if (authManager != null) {
             authManager.shutdown();
         }
         if (updateChecker != null) {
             updateChecker.stop();
             updateChecker.applyOnShutdown();
+        }
+        if (bedwarsAi != null) {
+            bedwarsAi.shutdown();
         }
         if (bedwarsArena != null) {
             bedwarsArena.shutdown();
@@ -126,6 +143,8 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         bedwarsMessages.reload();
         bedwarsWorld.reload();
         bedwarsArena.load();
+        bedwarsAi.load();
+        bedwarsArena.onGameStart(bedwarsAi::spawnForGame);
     }
 
     private void registerCommand(String name, TabExecutor executor) {

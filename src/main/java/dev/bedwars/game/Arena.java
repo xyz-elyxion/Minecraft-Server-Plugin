@@ -60,8 +60,10 @@ public final class Arena {
     private int countdownSeconds;
     private int respawnSeconds;
     private int voidY;
+    private int requiredPlayers;
     private int countdown;
     private int elapsed;
+    private Runnable gameStartHook = () -> { };
 
     public Arena(JavaPlugin plugin, BedwarsMessages messages, ArenaWorld world, BedwarsConfig bedwarsConfig) {
         this.plugin = plugin;
@@ -94,11 +96,14 @@ public final class Arena {
         this.countdownSeconds = Math.max(1, config.getInt("settings.countdown-seconds", 15));
         this.respawnSeconds = Math.max(1, config.getInt("settings.respawn-seconds", 4));
         this.voidY = config.getInt("settings.void-y", 20);
-
         int iron = Math.max(1, config.getInt("settings.generator-seconds.iron", 2));
         int gold = Math.max(1, config.getInt("settings.generator-seconds.gold", 8));
         int diamond = Math.max(1, config.getInt("settings.generator-seconds.diamond", 25));
         int emerald = Math.max(1, config.getInt("settings.generator-seconds.emerald", 40));
+        int autoStart = Math.max(1, config.getInt("ai.auto-start-players", 1));
+        this.requiredPlayers = config.getBoolean("ai.enabled", true)
+                ? Math.min(minPlayers, autoStart)
+                : minPlayers;
         Map<String, Integer> intervals = Map.of(
                 "IRON", iron, "GOLD", gold, "DIAMOND", diamond, "EMERALD", emerald);
 
@@ -198,7 +203,7 @@ public final class Arena {
         } else {
             messages.send(player, "joined-full");
         }
-        if (state == State.WAITING && playerTeams.size() >= minPlayers) {
+        if (state == State.WAITING && playerTeams.size() >= requiredPlayers) {
             state = State.COUNTING;
             countdown = countdownSeconds;
         }
@@ -231,7 +236,7 @@ public final class Arena {
             messages.send(player, "left");
         }
         if (state == State.RUNNING) {
-            checkWin();
+            checkVictory();
         } else if (playerTeams.isEmpty() && state == State.COUNTING) {
             state = State.WAITING;
             countdown = countdownSeconds;
@@ -252,6 +257,11 @@ public final class Arena {
     // Game flow
     // ------------------------------------------------------------------
 
+    /** Registers work to run once a game actually starts (the AI fills the teams). */
+    public void onGameStart(Runnable hook) {
+        this.gameStartHook = hook == null ? () -> { } : hook;
+    }
+
     public void startGame() {
         if (teams.isEmpty() || playerTeams.isEmpty()) {
             return;
@@ -270,6 +280,7 @@ public final class Arena {
             Kit.give(player, entry.getValue());
             updateBoard(player);
         }
+        gameStartHook.run();
         messages.broadcast("started");
     }
 
@@ -377,7 +388,7 @@ public final class Arena {
         if (team.aliveCount() == 0) {
             eliminateTeam(team);
         }
-        checkWin();
+        checkVictory();
     }
 
     private void eliminateTeam(Team team) {
@@ -391,7 +402,8 @@ public final class Arena {
         }
     }
 
-    private void checkWin() {
+    /** Re-evaluates the win condition; also used by the AI after a bot dies. */
+    public void checkVictory() {
         if (state != State.RUNNING) {
             return;
         }
@@ -427,19 +439,44 @@ public final class Arena {
             messages.send(breaker, "bed-own");
             return true;
         }
+        destroyBed(owner, breaker.getName());
+        return true;
+    }
+
+    /** Bed break by an AI bot, which has no {@link Player} to report as the breaker. */
+    public boolean handleBotBedBreak(Team breakerTeam, String breakerName, Block block) {
+        Team owner = teamAt(block.getLocation());
+        if (owner == null || owner == breakerTeam || !owner.bedAlive()) {
+            return false;
+        }
+        destroyBed(owner, breakerName);
+        return true;
+    }
+
+    private void destroyBed(Team owner, String breakerName) {
         owner.bedAlive(false);
         world.removeBed(owner.bed());
         messages.broadcast("bed-destroyed",
                 Placeholder.component("team", owner.component()),
-                Placeholder.unparsed("player", breaker.getName()));
+                Placeholder.unparsed("player", breakerName));
         if (owner.aliveCount() == 0) {
             eliminateTeam(owner);
         }
-        checkWin();
-        return true;
+        checkVictory();
     }
 
-    private Team teamAt(Location location) {
+    /** Eliminates a bot, which has no player to send messages to. */
+    public void eliminateBot(Team team, UUID memberId, String name) {
+        team.eliminate(memberId);
+        messages.broadcast("eliminated-bot", Placeholder.unparsed("player", name));
+        if (team.aliveCount() == 0) {
+            eliminateTeam(team);
+        }
+        checkVictory();
+    }
+
+    /** The team that owns the bed at {@code location}, if any. */
+    public Team teamAt(Location location) {
         for (Team team : teams) {
             Location bed = team.bed();
             if (bed.getWorld() == null || !bed.getWorld().equals(location.getWorld())) {

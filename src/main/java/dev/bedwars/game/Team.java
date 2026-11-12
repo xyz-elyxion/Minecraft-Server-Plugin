@@ -42,6 +42,10 @@ public final class Team {
         return id;
     }
 
+    public NamedTextColor color() {
+        return color;
+    }
+
     public Component component() {
         String label = id.substring(0, 1).toUpperCase(Locale.ROOT) + id.substring(1);
         return Component.text(label, color);

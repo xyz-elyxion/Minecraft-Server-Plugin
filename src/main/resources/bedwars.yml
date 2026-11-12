@@ -27,6 +27,26 @@ settings:
     y: 70
     z: 0.5
 
+  # AI opponents: husk bots that join the teams, fight, bridge and break beds.
+  ai:
+    enabled: true
+    # Bots added to each team when a game starts.
+    per-team: 2
+    # Humans needed before the countdown starts while the AI is on.
+    auto-start-players: 1
+    # EASY, NORMAL or HARD - sets the damage and attack speed below.
+    difficulty: NORMAL
+    # Overrides, tuned by difficulty. Damage is half-hearts.
+    damage: 3.0
+    attack-cooldown-ticks: 18
+    attack-range: 2.8
+    bed-range: 3.2
+    aggro-range: 16.0
+    # Blocks moved per AI step (four steps a second).
+    speed: 0.45
+    # Place wool under themselves so they can cross the void.
+    bridge: true
+
   generator-seconds:
     iron: 2
     gold: 8
@@ -69,6 +89,7 @@ messages:
   bed-gone: "<gray>That bed is already gone.</gray>"
   eliminated-player: "<red>You were eliminated - your bed is gone.</red>"
   eliminated-team: "<team> <red>has been eliminated.</red>"
+  eliminated-bot: "<white><player></white> <red>was eliminated.</red>"
   respawn: "<gray>Respawning in <white><seconds></white> seconds...</gray>"
   victory: "<gold><team> wins the game!</gold>"
   void: "<red>You fell into the void.</red>"
@@ -79,4 +100,9 @@ messages:
   started-command: "<green>Forced the game to start.</green>"
   no-permission: "<red>You do not have permission to do that.</red>"
   player-only: "<red>That command can only be used in game.</red>"
-  usage: "<yellow>Usage: <white>/bedwars <join|leave|shop|start|reset|reload></white></yellow>"
+  ai-on: "<green>AI opponents enabled - they join each team when a game starts.</green>"
+  ai-off: "<gray>AI opponents disabled and removed.</gray>"
+  ai-spawned: "<green>Spawned <white><count></white> AI opponent(s).</green>"
+  ai-cleared: "<gray>Removed all AI opponents.</gray>"
+  ai-status: "<gray>AI opponents are <white><state></white> (<white><count></white> active).</gray>"
+  usage: "<yellow>Usage: <white>/bedwars <join|leave|shop|ai|start|reset|reload></white></yellow>"

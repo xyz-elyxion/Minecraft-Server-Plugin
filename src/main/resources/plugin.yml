@@ -27,7 +27,7 @@ commands:
     aliases: [ca]
   bedwars:
     description: Join, leave or administer Bedwars.
-    usage: /bedwars <join|leave|shop|start|reset|reload>
+    usage: /bedwars <join|leave|shop|ai|start|reset|reload>
     aliases: [bw]
 
 permissions:
