@@ -191,6 +191,7 @@
         </p>
         <div class="actions">
           <a class="btn btn-primary" href="/CrackedAuth.jar" download>Download .jar</a>
+          <a class="btn btn-ghost" href="/Bedwars.jar" download>Download Bedwars .jar</a>
           <a class="btn btn-ghost" href="https://github.com/xyz-elyxion/Minecraft-Server-Plugin/releases/latest">
             Latest release
           </a>
@@ -247,14 +248,37 @@
         </div>
       </section>
 
+      <section id="bedwars">
+        <h2>Also in this repo: Bedwars</h2>
+        <p class="section-note">A second plugin, built from the same Gradle build — a compact two-team Bedwars arena.</p>
+        <div class="grid">
+          <div class="card">
+            <h3>Self-building arena</h3>
+            <p>Lobby, both bases with beds, the middle islands and the item generators are generated from coordinates in <code>config.yml</code> inside a void world.</p>
+          </div>
+          <div class="card">
+            <h3>Classic rules</h3>
+            <p>Break the enemy bed, buy gear at the shop, respawn while your bed stands, get eliminated when it falls.</p>
+          </div>
+          <div class="card">
+            <h3>Commands</h3>
+            <p><code class="cmd">/bedwars join</code> <code class="cmd">leave</code> <code class="cmd">shop</code> for players, <code class="cmd">start</code> <code class="cmd">reset</code> <code class="cmd">reload</code> for operators.</p>
+          </div>
+        </div>
+        <p class="section-note" style="margin-top:18px">
+          <a href="/Bedwars.jar" download>Download the Bedwars jar</a>
+        </p>
+      </section>
+
       <section id="install">
         <h2>Install</h2>
         <p class="section-note">Build locally or grab the jar from the latest release.</p>
-        <pre><span class="c"># build (JDK 25)</span>
+        <pre><span class="c"># build (JDK 25) - builds both plugins</span>
 ./gradlew build
 
-<span class="c"># drop the jar in and restart</span>
+<span class="c"># drop the jars in and restart</span>
 cp build/libs/CrackedAuth-1.0.0.jar plugins/
+cp bedwars/build/libs/Bedwars-1.0.0.jar plugins/
 <span class="k">mkdir</span> -p plugins   <span class="c"># if it is a fresh server</span>
 
 <span class="c"># server.properties</span>

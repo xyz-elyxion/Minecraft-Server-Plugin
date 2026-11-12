@@ -1,0 +1,82 @@
+# ---------------------------------------------------------------------------
+# Bedwars - a compact two-team Bedwars arena.
+#
+# The arena world is generated as an empty void world and the plugin builds the
+# lobby, both bases and the middle islands itself, so a fresh install is
+# playable without any manual world editing. Change the coordinates below to
+# reshape the map; the geometry is rebuilt on /bedwars reload.
+# ---------------------------------------------------------------------------
+
+settings:
+  # World name. Created automatically (and never saved) if missing.
+  world: bedwars_world
+
+  # Players needed before the countdown starts, and the per-team cap.
+  min-players: 2
+  max-team-size: 4
+
+  # Countdown length in seconds.
+  countdown-seconds: 15
+  # Seconds a player waits after dying while their bed is still alive.
+  respawn-seconds: 4
+  # Falling below this Y kills the player.
+  void-y: 20
+
+  lobby:
+    x: 0.5
+    y: 70
+    z: 0.5
+
+  generator-seconds:
+    iron: 2
+    gold: 8
+    diamond: 25
+    emerald: 40
+
+  # Where each generator drops items. Types: IRON, GOLD, DIAMOND, EMERALD.
+  generators:
+    - {type: IRON,    x: 10, y: 66, z: 1}
+    - {type: GOLD,    x: 10, y: 66, z: -1}
+    - {type: IRON,    x: -9, y: 66, z: 1}
+    - {type: GOLD,    x: -9, y: 66, z: -1}
+    - {type: DIAMOND, x: 0,  y: 65, z: 14}
+    - {type: DIAMOND, x: 0,  y: 65, z: -14}
+    - {type: EMERALD, x: 0,  y: 65, z: 0}
+
+  teams:
+    red:
+      color: RED
+      spawn: {x: 10.5, y: 66, z: 0.5}
+      bed: {x: 12, y: 66, z: 0}
+    blue:
+      color: BLUE
+      spawn: {x: -9.5, y: 66, z: 0.5}
+      bed: {x: -12, y: 66, z: 0}
+
+messages:
+  prefix: "<dark_gray>[<red>Bedwars</red>]</dark_gray> "
+  joined: "<green>You joined Bedwars. <white><needed></white> more player(s) needed.</green>"
+  joined-full: "<gold>The game is starting - you are in!</gold>"
+  left: "<gray>You left Bedwars.</gray>"
+  not-playing: "<red>You are not in a Bedwars game.</red>"
+  in-progress: "<red>A game is already running. Try again when it finishes.</red>"
+  game-full: "<red>All teams are full. Try again shortly.</red>"
+  already-playing: "<red>You are already in a game.</red>"
+  countdown: "<gold>Starting in <white><seconds></white>...</gold>"
+  started: "<green>Go! Protect your bed and destroy theirs.</green>"
+  bed-destroyed: "<team> <white>bed</white> was destroyed by <white><player></white>!"
+  bed-own: "<red>That is your own bed.</red>"
+  bed-gone: "<gray>That bed is already gone.</gray>"
+  eliminated-player: "<red>You were eliminated - your bed is gone.</red>"
+  eliminated-team: "<team> <red>has been eliminated.</red>"
+  respawn: "<gray>Respawning in <white><seconds></white> seconds...</gray>"
+  victory: "<gold><team> wins the game!</gold>"
+  void: "<red>You fell into the void.</red>"
+  shop-title: "<dark_gray>Item Shop</dark_gray>"
+  not-enough: "<red>You cannot afford that.</red>"
+  bought: "<green>Bought <white><item></white>.</green>"
+  reloaded: "<green>Arena configuration reloaded and reset.</green>"
+  started-command: "<green>Forced the game to start.</green>"
+  no-permission: "<red>You do not have permission to do that.</red>"
+  player-only: "<red>That command can only be used in game.</red>"
+  usage: "<yellow>Usage: <white>/bedwars <join|leave|shop|start|reset|reload></white></yellow>"

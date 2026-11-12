@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the CrackedAuth web interface on a port.
+"""Serve the CrackedAuth / Bedwars web interface on a port.
 
 Standard library only, so it runs anywhere Python 3 is available:
 
@@ -8,7 +8,8 @@ Standard library only, so it runs anywhere Python 3 is available:
 
 Routes:
     /                  the interface (web/index.html)
-    /CrackedAuth.jar   the newest build from dist/, as a plain jar download
+    /CrackedAuth.jar   the newest CrackedAuth build from dist/, as a plain download
+    /Bedwars.jar       the newest Bedwars build from dist/, as a plain download
     /healthz           "ok" for container and tunnel health checks
 """
 
@@ -33,7 +34,10 @@ class Handler(SimpleHTTPRequestHandler):
             self._send_bytes(b"ok\n", "text/plain; charset=utf-8")
             return
         if path == "/CrackedAuth.jar":
-            self._send_jar()
+            self._send_jar("CrackedAuth")
+            return
+        if path == "/Bedwars.jar":
+            self._send_jar("Bedwars")
             return
         super().do_GET()
 
@@ -46,8 +50,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _send_jar(self) -> None:
-        jars = sorted(DIST.glob("CrackedAuth-*.jar"))
+    def _send_jar(self, name: str) -> None:
+        jars = sorted(DIST.glob(f"{name}-*.jar"))
         if not jars:
             self.send_error(404, "No build found. Run ./gradlew build first.")
             return
