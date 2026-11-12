@@ -2,7 +2,7 @@ name: CrackedAuth
 version: '${version}'
 main: dev.crackedauth.CrackedAuthPlugin
 api-version: '26.3'
-description: Password-based registration and login for offline-mode ("cracked") servers.
+description: Password logins for offline-mode servers, plus a self-building Bedwars arena.
 author: CrackedAuth
 
 commands:
@@ -25,6 +25,10 @@ commands:
     description: Manage CrackedAuth accounts.
     usage: /authadmin <unregister|forcelogin|setpassword|info|update|reload>
     aliases: [ca]
+  bedwars:
+    description: Join, leave or administer Bedwars.
+    usage: /bedwars <join|leave|shop|start|reset|reload>
+    aliases: [bw]
 
 permissions:
   crackedauth.use:
@@ -32,4 +36,10 @@ permissions:
     default: true
   crackedauth.admin:
     description: Allows using /authadmin.
+    default: op
+  bedwars.play:
+    description: Allows joining Bedwars games.
+    default: true
+  bedwars.admin:
+    description: Allows starting, resetting and reloading the Bedwars arena.
     default: op

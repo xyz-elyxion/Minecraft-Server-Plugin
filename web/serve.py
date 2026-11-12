@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the CrackedAuth / Bedwars web interface on a port.
+"""Serve the CrackedAuth web interface on a port.
 
 Standard library only, so it runs anywhere Python 3 is available:
 
@@ -8,8 +8,7 @@ Standard library only, so it runs anywhere Python 3 is available:
 
 Routes:
     /                  the interface (web/index.html)
-    /CrackedAuth.jar   the newest CrackedAuth build from dist/, as a plain download
-    /Bedwars.jar       the newest Bedwars build from dist/, as a plain download
+    /CrackedAuth.jar   the newest build from dist/, as a plain jar download
     /healthz           "ok" for container and tunnel health checks
 """
 
@@ -35,9 +34,6 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if path == "/CrackedAuth.jar":
             self._send_jar("CrackedAuth")
-            return
-        if path == "/Bedwars.jar":
-            self._send_jar("Bedwars")
             return
         super().do_GET()
 

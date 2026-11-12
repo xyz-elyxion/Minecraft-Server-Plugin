@@ -1,32 +1,29 @@
 package dev.bedwars.util;
 
+import dev.bedwars.BedwarsConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
-/** MiniMessage message rendering, with the configured chat prefix. */
-public final class Messages {
+/** MiniMessage rendering for Bedwars, read from bedwars.yml. */
+public final class BedwarsMessages {
 
-    private final JavaPlugin plugin;
-    private FileConfiguration config;
+    private final BedwarsConfig config;
     private Component prefix;
 
-    public Messages(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public BedwarsMessages(BedwarsConfig config) {
+        this.config = config;
         reload();
     }
 
     public void reload() {
-        this.config = plugin.getConfig();
-        this.prefix = MiniMessage.miniMessage().deserialize(config.getString("messages.prefix", ""));
+        this.prefix = MiniMessage.miniMessage().deserialize(config.config().getString("messages.prefix", ""));
     }
 
     public Component get(String key, TagResolver... resolvers) {
-        String raw = config.getString("messages." + key);
+        String raw = config.config().getString("messages." + key);
         if (raw == null) {
             return Component.text("[Bedwars] Missing message: " + key);
         }

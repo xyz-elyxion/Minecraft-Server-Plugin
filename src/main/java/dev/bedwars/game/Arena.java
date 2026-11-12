@@ -1,7 +1,7 @@
 package dev.bedwars.game;
 
-import dev.bedwars.BedwarsPlugin;
-import dev.bedwars.util.Messages;
+import dev.bedwars.BedwarsConfig;
+import dev.bedwars.util.BedwarsMessages;
 import dev.bedwars.world.ArenaWorld;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,9 +45,10 @@ public final class Arena {
         WAITING, COUNTING, RUNNING, ENDING
     }
 
-    private final BedwarsPlugin plugin;
-    private final Messages messages;
+    private final JavaPlugin plugin;
+    private final BedwarsMessages messages;
     private final ArenaWorld world;
+    private final BedwarsConfig bedwarsConfig;
     private final List<Team> teams = new ArrayList<>();
     private final List<Generator> generators = new ArrayList<>();
     private final Map<UUID, Team> playerTeams = new LinkedHashMap<>();
@@ -61,10 +63,11 @@ public final class Arena {
     private int countdown;
     private int elapsed;
 
-    public Arena(BedwarsPlugin plugin, Messages messages, ArenaWorld world) {
+    public Arena(JavaPlugin plugin, BedwarsMessages messages, ArenaWorld world, BedwarsConfig bedwarsConfig) {
         this.plugin = plugin;
         this.messages = messages;
         this.world = world;
+        this.bedwarsConfig = bedwarsConfig;
     }
 
     public List<Team> teams() {
@@ -85,7 +88,7 @@ public final class Arena {
         teams.clear();
         generators.clear();
 
-        var config = plugin.getConfig();
+        var config = bedwarsConfig.config();
         this.minPlayers = Math.max(1, config.getInt("settings.min-players", 2));
         this.maxTeamSize = Math.max(1, config.getInt("settings.max-team-size", 4));
         this.countdownSeconds = Math.max(1, config.getInt("settings.countdown-seconds", 15));

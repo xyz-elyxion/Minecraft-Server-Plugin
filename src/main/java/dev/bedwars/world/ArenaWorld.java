@@ -1,5 +1,6 @@
 package dev.bedwars.world;
 
+import dev.bedwars.BedwarsConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRules;
@@ -22,6 +23,7 @@ import java.util.Locale;
 public final class ArenaWorld {
 
     private final JavaPlugin plugin;
+    private final BedwarsConfig bedwarsConfig;
     private String worldName;
     private double lobbyX;
     private double lobbyY;
@@ -29,13 +31,14 @@ public final class ArenaWorld {
     private World world;
     private boolean built;
 
-    public ArenaWorld(JavaPlugin plugin) {
+    public ArenaWorld(JavaPlugin plugin, BedwarsConfig bedwarsConfig) {
         this.plugin = plugin;
+        this.bedwarsConfig = bedwarsConfig;
         reload();
     }
 
     public void reload() {
-        var config = plugin.getConfig();
+        var config = bedwarsConfig.config();
         this.worldName = config.getString("settings.world", "bedwars_world");
         this.lobbyX = config.getDouble("settings.lobby.x", 0.5D);
         this.lobbyY = config.getDouble("settings.lobby.y", 70.0D);

@@ -1,11 +1,10 @@
 package dev.bedwars.listener;
 
-import dev.bedwars.BedwarsPlugin;
 import dev.bedwars.game.Arena;
 import dev.bedwars.game.Kit;
 import dev.bedwars.game.ShopMenu;
 import dev.bedwars.game.Team;
-import dev.bedwars.util.Messages;
+import dev.bedwars.util.BedwarsMessages;
 import org.bukkit.Location;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Player;
@@ -26,12 +25,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 /** Wires Bukkit events into the arena and the shop. */
 public final class GameListener implements Listener {
 
-    private final BedwarsPlugin plugin;
     private final Arena arena;
-    private final Messages messages;
+    private final BedwarsMessages messages;
 
-    public GameListener(BedwarsPlugin plugin, Arena arena, Messages messages) {
-        this.plugin = plugin;
+    public GameListener(Arena arena, BedwarsMessages messages) {
         this.arena = arena;
         this.messages = messages;
     }

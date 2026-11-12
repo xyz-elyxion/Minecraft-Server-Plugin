@@ -1,6 +1,6 @@
 package dev.bedwars.game;
 
-import dev.bedwars.util.Messages;
+import dev.bedwars.util.BedwarsMessages;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -57,7 +57,7 @@ public final class ShopMenu implements InventoryHolder {
     }
 
     /** Charges the player and hands over the item. Returns false when they cannot afford it. */
-    public boolean purchase(Player player, int slot, Messages messages) {
+    public boolean purchase(Player player, int slot, BedwarsMessages messages) {
         if (slot < 0 || slot >= OFFERS.size()) {
             return false;
         }

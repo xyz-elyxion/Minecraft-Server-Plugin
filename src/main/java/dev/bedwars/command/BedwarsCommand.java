@@ -1,9 +1,8 @@
 package dev.bedwars.command;
 
-import dev.bedwars.BedwarsPlugin;
 import dev.bedwars.game.Arena;
 import dev.bedwars.game.ShopMenu;
-import dev.bedwars.util.Messages;
+import dev.bedwars.util.BedwarsMessages;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -17,14 +16,14 @@ public final class BedwarsCommand implements TabExecutor {
 
     private static final List<String> ACTIONS = List.of("join", "leave", "shop", "start", "reset", "reload");
 
-    private final BedwarsPlugin plugin;
     private final Arena arena;
-    private final Messages messages;
+    private final BedwarsMessages messages;
+    private final Runnable reloadAction;
 
-    public BedwarsCommand(BedwarsPlugin plugin, Arena arena, Messages messages) {
-        this.plugin = plugin;
+    public BedwarsCommand(Arena arena, BedwarsMessages messages, Runnable reloadAction) {
         this.arena = arena;
         this.messages = messages;
+        this.reloadAction = reloadAction;
     }
 
     @Override
@@ -85,7 +84,7 @@ public final class BedwarsCommand implements TabExecutor {
                 if (!requireAdmin(sender)) {
                     return true;
                 }
-                plugin.reloadPlugin();
+                reloadAction.run();
                 messages.send(sender, "reloaded");
             }
             default -> messages.send(sender, "usage");
@@ -107,12 +106,14 @@ public final class BedwarsCommand implements TabExecutor {
             return List.of();
         }
         String prefix = args[0].toLowerCase(Locale.ROOT);
+        boolean admin = sender.hasPermission("bedwars.admin");
         List<String> matches = new ArrayList<>();
         for (String action : ACTIONS) {
-            if (action.startsWith(prefix) && !action.equals("start") && !action.equals("reset")
-                    && !action.equals("reload")) {
-                matches.add(action);
-            } else if (action.startsWith(prefix) && sender.hasPermission("bedwars.admin")) {
+            if (!action.startsWith(prefix)) {
+                continue;
+            }
+            boolean adminOnly = action.equals("start") || action.equals("reset") || action.equals("reload");
+            if (!adminOnly || admin) {
                 matches.add(action);
             }
         }

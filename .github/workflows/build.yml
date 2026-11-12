@@ -42,7 +42,7 @@ jobs:
             echo ""
             echo "| File | Size | API version |"
             echo "| --- | --- | --- |"
-            for jar in build/libs/CrackedAuth-*.jar bedwars/build/libs/Bedwars-*.jar; do
+            for jar in build/libs/*.jar; do
               echo "| $(basename "$jar") | $(du -h "$jar" | cut -f1) | $(unzip -p "$jar" plugin.yml | grep api-version) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -57,7 +57,6 @@ jobs:
         run: |
           set -euo pipefail
           j1=$(ls build/libs/CrackedAuth-*.jar)
-          j2=$(ls bedwars/build/libs/Bedwars-*.jar)
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             release="${GITHUB_REF_NAME}"
             if ! gh release view "$release" >/dev/null 2>&1; then
@@ -77,5 +76,5 @@ jobs:
               gh release edit "$release" --prerelease=false
             fi
           fi
-          gh release upload "$release" "$j1" "$j2" --clobber
-          echo "attached $(basename "$j1") and $(basename "$j2") to release ${release}" >> "$GITHUB_STEP_SUMMARY"
+          gh release upload "$release" "$j1" --clobber
+          echo "attached $(basename "$j1") to release ${release}" >> "$GITHUB_STEP_SUMMARY"

@@ -191,7 +191,6 @@
         </p>
         <div class="actions">
           <a class="btn btn-primary" href="/CrackedAuth.jar" download>Download .jar</a>
-          <a class="btn btn-ghost" href="/Bedwars.jar" download>Download Bedwars .jar</a>
           <a class="btn btn-ghost" href="https://github.com/xyz-elyxion/Minecraft-Server-Plugin/releases/latest">
             Latest release
           </a>
@@ -249,8 +248,8 @@
       </section>
 
       <section id="bedwars">
-        <h2>Also in this repo: Bedwars</h2>
-        <p class="section-note">A second plugin, built from the same Gradle build — a compact two-team Bedwars arena.</p>
+        <h2>Included: Bedwars</h2>
+        <p class="section-note">The same jar also ships a compact two-team Bedwars arena, configured from <code>bedwars.yml</code>.</p>
         <div class="grid">
           <div class="card">
             <h3>Self-building arena</h3>
@@ -266,7 +265,7 @@
           </div>
         </div>
         <p class="section-note" style="margin-top:18px">
-          <a href="/Bedwars.jar" download>Download the Bedwars jar</a>
+          Bedwars sits behind <code>bedwars.yml</code>: set <code>settings.world</code> to an existing arena world, or leave the defaults and it builds its own void arena on first start.
         </p>
       </section>
 
@@ -278,7 +277,6 @@
 
 <span class="c"># drop the jars in and restart</span>
 cp build/libs/CrackedAuth-1.0.0.jar plugins/
-cp bedwars/build/libs/Bedwars-1.0.0.jar plugins/
 <span class="k">mkdir</span> -p plugins   <span class="c"># if it is a fresh server</span>
 
 <span class="c"># server.properties</span>
