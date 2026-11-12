@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: build-${{ github.ref }}
@@ -47,10 +47,32 @@ jobs:
             echo "| $(basename "$jar") | $(du -h "$jar" | cut -f1) | ${api_version} |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload plugin jar
-        uses: actions/upload-artifact@v7
-        with:
-          name: CrackedAuth
-          path: build/libs/CrackedAuth-*.jar
-          if-no-files-found: error
-          retention-days: 90
+      # Artifacts are always handed out as a zip, so the built jar is attached to
+      # a release instead: pushes to main refresh the "latest" release, and a
+      # v* tag produces its own release. Both expose the plain .jar download.
+      - name: Publish the .jar as a release asset
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          jar=$(ls build/libs/CrackedAuth-*.jar)
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            release="${GITHUB_REF_NAME}"
+            if ! gh release view "$release" >/dev/null 2>&1; then
+              gh release create "$release" \
+                --title "CrackedAuth ${release}" \
+                --notes "Built from ${GITHUB_SHA}." \
+                --target "${GITHUB_SHA}"
+            fi
+          else
+            release="latest"
+            if ! gh release view "$release" >/dev/null 2>&1; then
+              gh release create "$release" \
+                --title "Latest build" \
+                --notes "Automatic build of every push to ${GITHUB_REF_NAME}." \
+                --prerelease
+            fi
+          fi
+          gh release upload "$release" "$jar" --clobber
+          echo "attached $(basename "$jar") to release ${release}" >> "$GITHUB_STEP_SUMMARY"
