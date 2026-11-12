@@ -15,6 +15,8 @@ public final class AuthSession {
     private final String name;
     private final long joinedAt = System.currentTimeMillis();
     private Location holdLocation;
+    private Location returnLocation;
+    private boolean inLimbo;
     private boolean authenticated;
     private int failedAttempts;
     private long lockedUntil;
@@ -38,12 +40,30 @@ public final class AuthSession {
         return joinedAt;
     }
 
+    /** Where the player is pinned while unauthenticated. */
     public Location holdLocation() {
         return holdLocation;
     }
 
     public void holdLocation(Location holdLocation) {
         this.holdLocation = holdLocation;
+    }
+
+    /** Where the player goes back to once they authenticate. */
+    public Location returnLocation() {
+        return returnLocation;
+    }
+
+    public void returnLocation(Location returnLocation) {
+        this.returnLocation = returnLocation;
+    }
+
+    public boolean inLimbo() {
+        return inLimbo;
+    }
+
+    public void inLimbo(boolean inLimbo) {
+        this.inLimbo = inLimbo;
     }
 
     public boolean authenticated() {

@@ -1,10 +1,12 @@
 package dev.crackedauth.auth;
 
 import dev.crackedauth.util.Messages;
+import dev.crackedauth.world.LimboWorld;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,6 +21,10 @@ import java.util.concurrent.TimeUnit;
  * Owns every auth decision: which players are logged in, how passwords are
  * hashed and verified, when to lock a player out and when to kick them.
  *
+ * <p>Unauthenticated players are moved to the limbo world (see {@link LimboWorld})
+ * and pinned there until they log in, at which point they are returned to where
+ * they were.</p>
+ *
  * <p>Password hashing runs on a worker thread because PBKDF2 is deliberately
  * slow; the result is applied back on the main thread, where all Bukkit calls
  * happen.</p>
@@ -28,6 +34,7 @@ public final class AuthManager {
     private final JavaPlugin plugin;
     private final AccountStore store;
     private final Messages messages;
+    private final LimboWorld limbo;
     private final Map<UUID, AuthSession> sessions = new ConcurrentHashMap<>();
 
     private int minPasswordLength;
@@ -40,10 +47,11 @@ public final class AuthManager {
     private boolean sessionRequireSameIp;
     private boolean kickOnDisable;
 
-    public AuthManager(JavaPlugin plugin, AccountStore store, Messages messages) {
+    public AuthManager(JavaPlugin plugin, AccountStore store, Messages messages, LimboWorld limbo) {
         this.plugin = plugin;
         this.store = store;
         this.messages = messages;
+        this.limbo = limbo;
         reloadSettings();
     }
 
@@ -65,7 +73,21 @@ public final class AuthManager {
     // ------------------------------------------------------------------
 
     public void handleJoin(Player player) {
-        AuthSession session = new AuthSession(player.getUniqueId(), player.getName(), player.getLocation().clone());
+        Location joinLocation = player.getLocation().clone();
+        Location holdLocation = joinLocation;
+        boolean inLimbo = false;
+
+        if (limbo.isAvailable()) {
+            Location spawn = limbo.spawn();
+            if (spawn != null && player.teleport(spawn)) {
+                holdLocation = spawn;
+                inLimbo = true;
+            }
+        }
+
+        AuthSession session = new AuthSession(player.getUniqueId(), player.getName(), holdLocation);
+        session.returnLocation(joinLocation);
+        session.inLimbo(inLimbo);
         sessions.put(player.getUniqueId(), session);
 
         UserAccount account = store.get(player.getName());
@@ -289,8 +311,22 @@ public final class AuthManager {
             messages.send(player, "logout-not-logged-in");
             return;
         }
+
         session.authenticated(false);
-        session.holdLocation(player.getLocation().clone());
+        Location current = player.getLocation().clone();
+        Location holdLocation = current;
+        boolean inLimbo = false;
+        if (limbo.isAvailable()) {
+            Location spawn = limbo.spawn();
+            if (spawn != null && player.teleport(spawn)) {
+                holdLocation = spawn;
+                inLimbo = true;
+            }
+        }
+        session.returnLocation(current);
+        session.holdLocation(holdLocation);
+        session.inLimbo(inLimbo);
+
         UserAccount account = store.get(player.getName());
         if (account != null) {
             account.lastLogin(0L);
@@ -322,6 +358,7 @@ public final class AuthManager {
         }
         session.authenticated(true);
         session.cancelTimeout();
+        sendToReturnLocation(player, session);
         player.sendActionBar(Component.empty());
         messages.send(player, "admin-forcelogin-target");
         return true;
@@ -335,12 +372,34 @@ public final class AuthManager {
         session.authenticated(true);
         session.cancelTimeout();
         session.failedAttempts(0);
+        sendToReturnLocation(player, session);
         player.sendActionBar(Component.empty());
         account.lastLogin(System.currentTimeMillis());
         account.lastIp(addressOf(player));
         store.saveAsync();
         messages.send(player, messageKey);
         showTitle(player, "auth-success-title", "auth-success-subtitle");
+    }
+
+    /**
+     * Teleports a player out of limbo to where they were before joining it.
+     * Falls back to the main world spawn if the remembered world is gone.
+     */
+    private void sendToReturnLocation(Player player, AuthSession session) {
+        if (!session.inLimbo()) {
+            return;
+        }
+        session.inLimbo(false);
+        Location target = session.returnLocation();
+        World world = target == null ? null : target.getWorld();
+        if (world == null || limbo.isLimboWorld(world)) {
+            World main = limbo.mainWorld();
+            if (main == null) {
+                return;
+            }
+            target = main.getSpawnLocation();
+        }
+        player.teleport(target);
     }
 
     /**
@@ -374,12 +433,15 @@ public final class AuthManager {
         for (AuthSession session : sessions.values()) {
             session.cancelTimeout();
         }
-        if (kickOnDisable) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                AuthSession session = sessions.get(player.getUniqueId());
-                if (session != null && !session.authenticated()) {
-                    player.kick(messages.get("plugin-disabled-kick"));
-                }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            AuthSession session = sessions.get(player.getUniqueId());
+            if (session == null || session.authenticated()) {
+                continue;
+            }
+            // Never leave anyone stranded in limbo once the gate is gone.
+            sendToReturnLocation(player, session);
+            if (kickOnDisable) {
+                player.kick(messages.get("plugin-disabled-kick"));
             }
         }
         sessions.clear();

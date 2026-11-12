@@ -9,6 +9,7 @@ import dev.crackedauth.command.LogoutCommand;
 import dev.crackedauth.command.RegisterCommand;
 import dev.crackedauth.listener.AuthGateListener;
 import dev.crackedauth.util.Messages;
+import dev.crackedauth.world.LimboWorld;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
@@ -19,6 +20,7 @@ public final class CrackedAuthPlugin extends JavaPlugin {
 
     private Messages messages;
     private AccountStore accountStore;
+    private LimboWorld limboWorld;
     private AuthManager authManager;
     private BukkitTask promptTask;
 
@@ -29,7 +31,8 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         this.messages = new Messages(this);
         this.accountStore = new AccountStore(this);
         this.accountStore.load();
-        this.authManager = new AuthManager(this, accountStore, messages);
+        this.limboWorld = new LimboWorld(this);
+        this.authManager = new AuthManager(this, accountStore, messages, limboWorld);
 
         if (Bukkit.getOnlineMode()) {
             getLogger().warning("This server runs with online-mode=true, so Mojang already authenticates players.");
@@ -47,6 +50,7 @@ public final class CrackedAuthPlugin extends JavaPlugin {
         this.promptTask = Bukkit.getScheduler().runTaskTimer(this, authManager::tick, 40L, 40L);
 
         getLogger().info("CrackedAuth enabled with " + accountStore.size() + " stored account(s).");
+        limboWorld.loadAtStartup();
     }
 
     @Override
@@ -66,6 +70,7 @@ public final class CrackedAuthPlugin extends JavaPlugin {
     public void reloadPlugin() {
         reloadConfig();
         messages.reload();
+        limboWorld.reload();
         authManager.reloadSettings();
     }
 

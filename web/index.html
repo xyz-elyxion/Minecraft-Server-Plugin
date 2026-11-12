@@ -210,8 +210,8 @@
             <p>PBKDF2-HMAC-SHA256, 210,000 iterations, a random salt per account and a constant-time compare. Hashes run off the main thread.</p>
           </div>
           <div class="card">
-            <h3>Auth gate</h3>
-            <p>Unauthenticated players are held at their join point and cannot chat, run commands, break blocks, interact or take damage.</p>
+            <h3>Limbo world</h3>
+            <p>Players who have not logged in wait in their own empty void world, pinned in place and unable to chat, run commands, break blocks, interact or take damage. Logging in returns them to where they were.</p>
           </div>
           <div class="card">
             <h3>Brute-force defence</h3>
@@ -257,7 +257,8 @@ cp build/libs/CrackedAuth-1.0.0.jar plugins/
 online-mode=<span class="s">false</span></pre>
         <p class="section-note" style="margin-top:18px">
           First run writes <code>plugins/CrackedAuth/config.yml</code> (password rules, timeouts,
-          session window, every message) and <code>users.yml</code> for the accounts.
+          session window, every message) and <code>users.yml</code> for the accounts, plus the
+          empty <code>crackedauth_limbo</code> world that waits for unauthenticated players.
         </p>
       </section>
     </main>

@@ -21,6 +21,16 @@ settings:
   # Seconds the lockout lasts after too many wrong passwords.
   lockout-seconds: 300
 
+  limbo:
+    # Send unauthenticated players to their own empty void world instead of
+    # holding them where they joined. Logging in puts them back where they were.
+    enabled: true
+    # World name (also its folder in the server directory). Created automatically
+    # as an empty void world if it does not exist yet.
+    world-name: crackedauth_limbo
+    # Height the player is placed at inside the limbo world.
+    spawn-y: 65
+
   session:
     # Sign players back in automatically when they reconnect.
     enabled: true
