@@ -1,45 +1,17 @@
-name: CrackedAuth
+name: SpeedrunAI
 version: '${version}'
-main: dev.crackedauth.CrackedAuthPlugin
+main: dev.speedrun.SpeedrunPlugin
 api-version: '26.3'
-description: Password logins for offline-mode servers, plus a self-building Bedwars arena.
-author: CrackedAuth
+description: An AI runner that speedruns Minecraft on your server - wood, tools, digging, iron, furnace, iron pickaxe, against a live timer.
+author: SpeedrunAI
 
 commands:
-  register:
-    description: Create an account on this server.
-    usage: /register <password> <confirm-password>
-    aliases: [reg]
-  login:
-    description: Log in with your password.
-    usage: /login <password>
-    aliases: [l]
-  logout:
-    description: Log out and lock your session again.
-    usage: /logout
-  changepassword:
-    description: Change your account password.
-    usage: /changepassword <current-password> <new-password>
-    aliases: [cpw]
-  authadmin:
-    description: Manage CrackedAuth accounts.
-    usage: /authadmin <unregister|forcelogin|setpassword|info|update|reload>
-    aliases: [ca]
-  bedwars:
-    description: Join, leave or administer Bedwars.
-    usage: /bedwars <join|leave|shop|ai|start|reset|reload>
-    aliases: [bw]
+  speedrun:
+    description: Start, stop or inspect the speedrun.
+    usage: /speedrun <start|stop|status|reload>
+    aliases: [sr]
 
 permissions:
-  crackedauth.use:
-    description: Allows using /register, /login, /logout and /changepassword.
-    default: true
-  crackedauth.admin:
-    description: Allows using /authadmin.
-    default: op
-  bedwars.play:
-    description: Allows joining Bedwars games.
-    default: true
-  bedwars.admin:
-    description: Allows starting, resetting and reloading the Bedwars arena.
+  speedrun.use:
+    description: Allows starting, stopping and inspecting the speedrun.
     default: op

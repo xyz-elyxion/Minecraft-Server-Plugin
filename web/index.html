@@ -1,302 +1,140 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CrackedAuth — password logins for offline-mode Minecraft servers</title>
-  <meta name="description" content="CrackedAuth adds registration, login, session resume and an auth gate to offline-mode Minecraft Java 26.3 servers.">
-  <style>
-    :root {
-      --bg: #0f1115;
-      --panel: #161a21;
-      --panel-2: #1c222b;
-      --line: #262d38;
-      --text: #e8ebf0;
-      --muted: #9aa4b2;
-      --gold: #f0b429;
-      --green: #3ddc97;
-      --radius: 14px;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: radial-gradient(1100px 520px at 50% -180px, #1d2530 0%, var(--bg) 62%);
-      color: var(--text);
-      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .wrap { max-width: 1020px; margin: 0 auto; padding: 0 24px; }
-
-    a { color: var(--gold); }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 22px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 650; letter-spacing: -0.01em; }
-
-    .mark {
-      width: 34px; height: 34px;
-      display: grid; place-items: center;
-      border-radius: 10px;
-      background: linear-gradient(160deg, #f7c948, #d99400);
-      color: #1a1200;
-      font-size: 13px; font-weight: 800;
-    }
-
-    .nav-links { display: flex; align-items: center; gap: 18px; font-size: 14px; }
-    .nav-links a { color: var(--muted); text-decoration: none; }
-    .nav-links a:hover { color: var(--text); }
-
-    .hero { padding: 68px 0 40px; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 5px 11px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(240, 180, 41, 0.07);
-      color: var(--gold);
-      font-size: 12.5px; font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
-
-    h1 {
-      margin: 20px 0 14px;
-      font-size: clamp(34px, 5.4vw, 52px);
-      line-height: 1.06;
-      letter-spacing: -0.03em;
-    }
-
-    h1 span { color: var(--gold); }
-
-    .lede { max-width: 620px; margin: 0 0 30px; color: var(--muted); font-size: 17.5px; }
-
-    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-
-    .btn {
-      display: inline-flex; align-items: center; gap: 9px;
-      padding: 13px 20px;
-      border-radius: 11px;
-      border: 1px solid transparent;
-      font-size: 15px; font-weight: 620;
-      text-decoration: none;
-      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
-    }
-
-    .btn:hover { transform: translateY(-1px); }
-
-    .btn-primary { background: var(--gold); color: #1a1200; }
-    .btn-primary:hover { background: #ffc93f; }
-
-    .btn-ghost { background: var(--panel); border-color: var(--line); color: var(--text); }
-    .btn-ghost:hover { border-color: #3a4553; }
-
-    .meta { margin-top: 18px; color: var(--muted); font-size: 13px; }
-
-    section { padding: 46px 0; border-top: 1px solid var(--line); }
-
-    h2 { margin: 0 0 6px; font-size: 21px; letter-spacing: -0.01em; }
-    .section-note { margin: 0 0 26px; color: var(--muted); font-size: 14.5px; }
-
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-
-    .card {
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-
-    .card h3 { margin: 0 0 8px; font-size: 15.5px; }
-    .card p { margin: 0; color: var(--muted); font-size: 14px; }
-
-    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-
-    .cmd, .card code {
-      background: rgba(240, 180, 41, 0.1);
-      border: 1px solid rgba(240, 180, 41, 0.18);
-      color: var(--gold);
-      border-radius: 6px;
-      padding: 1px 6px;
-      font-size: 13px;
-    }
-
-    table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
-    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { color: var(--muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.06em; }
-    tr:last-child td { border-bottom: none; }
-    td:first-child { white-space: nowrap; }
-
-    .table-shell { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
-
-    pre {
-      margin: 0;
-      padding: 18px 20px;
-      background: #0b0e12;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow-x: auto;
-      font-size: 13.5px;
-      line-height: 1.75;
-      color: #cfd6e0;
-    }
-
-    pre .c { color: #63707f; }
-    pre .k { color: var(--gold); }
-    pre .s { color: var(--green); }
-
-    footer {
-      display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
-      padding: 30px 0 46px;
-      border-top: 1px solid var(--line);
-      color: var(--muted); font-size: 13.5px;
-    }
-
-    @media (max-width: 560px) {
-      .nav-links { display: none; }
-      .hero { padding-top: 46px; }
-      th, td { padding: 10px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpeedrunAI — a Minecraft speedrun bot you can watch</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --line: #232b36;
+    --text: #e6edf3;
+    --muted: #9aa7b4;
+    --green: #3fb950;
+    --gold: #d29922;
+    --red: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 20% -10%, #17202b 0%, var(--bg) 60%);
+    color: var(--text);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 96px; }
+  .tag {
+    display: inline-block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--green); border: 1px solid #23402b; background: #12211a;
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 20px;
+  }
+  h1 { font-size: 42px; line-height: 1.15; margin: 0 0 14px; letter-spacing: -.02em; }
+  h1 span { color: var(--gold); }
+  p.lede { font-size: 18px; color: var(--muted); margin: 0 0 28px; max-width: 60ch; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 56px; }
+  .btn {
+    display: inline-block; padding: 11px 20px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; border: 1px solid var(--line); color: var(--text); background: var(--panel);
+  }
+  .btn-primary { background: #238636; border-color: #2ea043; }
+  .btn-primary:hover { background: #2ea043; }
+  .btn:hover { border-color: #38424f; }
+  h2 { font-size: 20px; margin: 48px 0 8px; }
+  .note { color: var(--muted); margin: 0 0 20px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .card h3 { margin: 0 0 8px; font-size: 15px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  ol.route { list-style: none; counter-reset: split; padding: 0; margin: 0; }
+  ol.route li {
+    counter-increment: split; display: flex; gap: 14px; align-items: baseline;
+    padding: 10px 0; border-bottom: 1px solid var(--line);
+  }
+  ol.route li::before {
+    content: counter(split); flex: 0 0 26px; height: 26px; border-radius: 50%;
+    background: #1f2733; color: var(--muted); font-size: 13px;
+    display: grid; place-items: center;
+  }
+  ol.route li:last-child { border-bottom: 0; }
+  ol.route b { font-weight: 600; }
+  ol.route span { color: var(--muted); font-size: 14px; }
+  code {
+    background: #0b0f14; border: 1px solid var(--line); border-radius: 5px;
+    padding: 1px 6px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  pre {
+    background: #0b0f14; border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto; font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #c9d1d9;
+  }
+  footer { margin-top: 56px; color: #6e7b8a; font-size: 13px; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand"><span class="mark">CA</span> CrackedAuth</div>
-      <nav class="nav-links">
-        <a href="#commands">Commands</a>
-        <a href="#install">Install</a>
-        <a href="https://github.com/xyz-elyxion/Minecraft-Server-Plugin">GitHub</a>
-      </nav>
-    </header>
-
-    <main>
-      <div class="hero">
-        <span class="eyebrow"><span class="dot"></span> Paper 26.3 · Java 25</span>
-        <h1>Passwords for your <span>offline-mode</span> server.</h1>
-        <p class="lede">
-          CrackedAuth gives every player a real account on a cracked server: salted PBKDF2
-          passwords, session resume by IP, brute-force lockouts, and a gate that freezes
-          a player until they log in.
-        </p>
-        <div class="actions">
-          <a class="btn btn-primary" href="/CrackedAuth.jar" download>Download .jar</a>
-          <a class="btn btn-ghost" href="https://github.com/xyz-elyxion/Minecraft-Server-Plugin/releases/latest">
-            Latest release
-          </a>
-        </div>
-        <p class="meta">
-          Built by GitHub Actions on every push to main — the release carries the plain jar,
-          no zip. Server needs <code>online-mode=false</code> and Java 25.
-        </p>
-      </div>
-
-      <section>
-        <h2>What it handles</h2>
-        <p class="section-note">Everything between “player joined” and “player is actually allowed to play”.</p>
-        <div class="grid">
-          <div class="card">
-            <h3>Password storage</h3>
-            <p>PBKDF2-HMAC-SHA256, 210,000 iterations, a random salt per account and a constant-time compare. Hashes run off the main thread.</p>
-          </div>
-          <div class="card">
-            <h3>Limbo world</h3>
-            <p>Players who have not logged in wait in their own empty void world, pinned in place and unable to chat, run commands, break blocks, interact or take damage. Logging in returns them to where they were.</p>
-          </div>
-          <div class="card">
-            <h3>Brute-force defence</h3>
-            <p>Failed attempts are counted, then the player is kicked and locked out. Idle players are kicked when the login timer runs out.</p>
-          </div>
-          <div class="card">
-            <h3>Session resume</h3>
-            <p>Reconnecting from the same address inside the configured window signs the player straight back in.</p>
-          </div>
-          <div class="card">
-            <h3>Self-update</h3>
-            <p>Checks GitHub releases, downloads a newer jar and installs it on the next restart. Ships with the latest release; <code>/authadmin update</code> checks on demand.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="commands">
-        <h2>Commands</h2>
-        <p class="section-note">Aliases in brackets. Messages are MiniMessage strings in <code>config.yml</code>.</p>
-        <div class="table-shell">
-          <table>
-            <thead>
-              <tr><th>Command</th><th>What it does</th><th>Who</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><code class="cmd">/register &lt;pw&gt; &lt;pw&gt;</code></td><td>Creates the account and logs in. <span style="color:var(--muted)">[reg]</span></td><td>everyone</td></tr>
-              <tr><td><code class="cmd">/login &lt;pw&gt;</code></td><td>Signs in and releases the gate. <span style="color:var(--muted)">[l]</span></td><td>everyone</td></tr>
-              <tr><td><code class="cmd">/changepassword</code></td><td>Swaps in a new password after checking the current one. <span style="color:var(--muted)">[cpw]</span></td><td>everyone</td></tr>
-              <tr><td><code class="cmd">/logout</code></td><td>Re-locks the session immediately.</td><td>everyone</td></tr>
-              <tr><td><code class="cmd">/authadmin</code></td><td><code>unregister</code>, <code>forcelogin</code>, <code>setpassword</code>, <code>info</code>, <code>update</code>, <code>reload</code>. <span style="color:var(--muted)">[ca]</span></td><td>operators</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="bedwars">
-        <h2>Included: Bedwars</h2>
-        <p class="section-note">The same jar also ships a compact two-team Bedwars arena, configured from <code>bedwars.yml</code>.</p>
-        <div class="grid">
-          <div class="card">
-            <h3>Self-building arena</h3>
-            <p>Lobby, both bases with beds, the middle islands and the item generators are generated from coordinates in <code>config.yml</code> inside a void world.</p>
-          </div>
-          <div class="card">
-            <h3>Classic rules</h3>
-            <p>Break the enemy bed, buy gear at the shop, respawn while your bed stands, get eliminated when it falls.</p>
-          </div>
-          <div class="card">
-            <h3>Commands</h3>
-            <p><code class="cmd">/bedwars join</code> <code class="cmd">leave</code> <code class="cmd">shop</code> for players, <code class="cmd">ai</code> <code class="cmd">start</code> <code class="cmd">reset</code> <code class="cmd">reload</code> for operators.</p>
-          </div>
-          <div class="card">
-            <h3>Speedrun AI</h3>
-            <p>Team-coloured husk runners go straight for the enemy bed, bridging the void and ignoring fights on the way, then hunt whoever is left. Runs are timed from the first tick. Tune them in the <code class="cmd">ai</code> block of <code>bedwars.yml</code>, or start a run with <code class="cmd">/bedwars ai spawn</code>.</p>
-          </div>
-        </div>
-        <p class="section-note" style="margin-top:18px">
-          Bedwars sits behind <code>bedwars.yml</code>: set <code>settings.world</code> to an existing arena world, or leave the defaults and it builds its own void arena on first start.
-        </p>
-      </section>
-
-      <section id="install">
-        <h2>Install</h2>
-        <p class="section-note">Build locally or grab the jar from the latest release.</p>
-        <pre><span class="c"># build (JDK 25) - builds both plugins</span>
-./gradlew build
-
-<span class="c"># drop the jars in and restart</span>
-cp build/libs/CrackedAuth-1.0.0.jar plugins/
-<span class="k">mkdir</span> -p plugins   <span class="c"># if it is a fresh server</span>
-
-<span class="c"># server.properties</span>
-online-mode=<span class="s">false</span></pre>
-        <p class="section-note" style="margin-top:18px">
-          First run writes <code>plugins/CrackedAuth/config.yml</code> (password rules, timeouts,
-          session window, every message) and <code>users.yml</code> for the accounts, plus the
-          empty <code>crackedauth_limbo</code> world that waits for unauthenticated players.
-        </p>
-      </section>
-    </main>
-
-    <footer>
-      <span>CrackedAuth 1.0.0 · api-version 26.3</span>
-      <span>Not affiliated with Mojang or Microsoft.</span>
-    </footer>
+<div class="wrap">
+  <div class="tag">Paper 26.3 · Java 25</div>
+  <h1>SpeedrunAI runs Minecraft <span>so you can watch</span></h1>
+  <p class="lede">
+    A server-side bot that plays the early-game any% route on its own: punches wood, crafts tools,
+    digs to iron, builds a furnace and comes back up with an iron pickaxe — against a live timer with splits.
+  </p>
+  <div class="cta">
+    <a class="btn btn-primary" href="/SpeedrunAI.jar" download>Download .jar</a>
+    <a class="btn" href="https://github.com/xyz-elyxion/Minecraft-Server-Plugin/releases/latest">Latest release</a>
   </div>
+
+  <h2>The route</h2>
+  <p class="note">Every step is a split on the clock. Nothing is scripted to a coordinate — the bot searches the terrain around itself for what it needs.</p>
+  <ol class="route">
+    <li><b>Wood</b> <span>— find a tree, chop 4 logs</span></li>
+    <li><b>Crafting table + wooden pickaxe</b> <span>— planks, sticks, 4 planks for the table</span></li>
+    <li><b>Dug down</b> <span>— vertical shaft to y=40, banking cobblestone on the way</span></li>
+    <li><b>Stone pickaxe</b> <span>— 3 cobblestone, and the tier that can mine iron</span></li>
+    <li><b>Iron ore</b> <span>— 3 blocks of ore found around the shaft</span></li>
+    <li><b>Furnace</b> <span>— placed, loaded with ore and plank fuel</span></li>
+    <li><b>Smelted iron</b> <span>— 3 raw iron become 3 ingots in a real furnace</span></li>
+    <li><b>Iron pickaxe</b> <span>— the run ends here</span></li>
+  </ol>
+
+  <h2>How it plays</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Real drops, real blocks</h3>
+      <p>Blocks are broken for real and the drops come from the block, so a wrong tool tier yields nothing — the bot has to be holding the right pickaxe to make progress.</p>
+    </div>
+    <div class="card">
+      <h3>Live timer</h3>
+      <p>A boss bar shows the clock and split count, every split is broadcast, and <code>/speedrun status</code> lists the splits so far.</p>
+    </div>
+    <div class="card">
+      <h3>Any normal world</h3>
+      <p>It runs where you point it, at the world spawn. Trees, stone and iron are found by searching; no schematic or preset map required.</p>
+    </div>
+  </div>
+
+  <h2>Install</h2>
+  <p class="note">Drop the jar into <code>plugins/</code>, start the server, then:</p>
+  <pre>/speedrun start     # send the runner, timer starts
+/speedrun status    # clock + splits so far
+/speedrun stop      # pull the runner
+/speedrun reload    # re-read config.yml</pre>
+
+  <h2>Tuning</h2>
+  <p class="note">Everything lives in <code>plugins/SpeedrunAI/config.yml</code>.</p>
+  <pre>run:
+  world: world        # where the run happens
+  boss-bar: true      # live timer for everyone online
+  speed: 0.35         # blocks per step
+  step-ticks: 2       # ticks between steps
+  break-ticks: 10     # ticks to break one block
+  dig-to-y: 40        # iron depth
+  logs: 4             # logs the route needs
+  iron: 3             # raw iron the route needs</pre>
+
+  <footer>
+    Paper 26.3 · Java 25 · built by GitHub Actions on every push ·
+    the run stops at an iron pickaxe, it does not go to the End.
+  </footer>
+</div>
 </body>
 </html>

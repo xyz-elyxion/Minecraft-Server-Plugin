@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the CrackedAuth web interface on a port.
+"""Serve the SpeedrunAI web interface on a port.
 
 Standard library only, so it runs anywhere Python 3 is available:
 
@@ -8,7 +8,7 @@ Standard library only, so it runs anywhere Python 3 is available:
 
 Routes:
     /                  the interface (web/index.html)
-    /CrackedAuth.jar   the newest build from dist/, as a plain jar download
+    /SpeedrunAI.jar    the newest build from dist/, as a plain jar download
     /healthz           "ok" for container and tunnel health checks
 """
 
@@ -32,8 +32,8 @@ class Handler(SimpleHTTPRequestHandler):
         if path in ("/healthz", "/health"):
             self._send_bytes(b"ok\n", "text/plain; charset=utf-8")
             return
-        if path == "/CrackedAuth.jar":
-            self._send_jar("CrackedAuth")
+        if path == "/SpeedrunAI.jar":
+            self._send_jar("SpeedrunAI")
             return
         super().do_GET()
 
@@ -65,7 +65,7 @@ class Handler(SimpleHTTPRequestHandler):
 def main() -> None:
     port = int(os.environ.get("PORT", "8000"))
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    print(f"CrackedAuth web interface on http://0.0.0.0:{port}", flush=True)
+    print(f"SpeedrunAI web interface on http://0.0.0.0:{port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

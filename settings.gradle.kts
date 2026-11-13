@@ -1,1 +1,1 @@
-rootProject.name = "CrackedAuth"
+rootProject.name = "SpeedrunAI"

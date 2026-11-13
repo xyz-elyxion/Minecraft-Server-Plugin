@@ -1,127 +1,53 @@
 # ---------------------------------------------------------------------------
-# CrackedAuth - password registration / login for offline-mode ("cracked")
-# Minecraft Java 26.3 servers (Paper 26.3 or newer).
+# SpeedrunAI - a bot that runs the early-game Any% route on your server.
 #
-# Messages are rendered with MiniMessage, so <red>, <gold>, <gray>, <bold>
-# and friends all work. Placeholders such as <seconds> are filled in by
-# the plugin at runtime.
+# The runner spawns at the world spawn and plays the route on its own:
+#
+#   wood -> crafting table + wooden pickaxe -> dig down collecting cobblestone
+#        -> stone pickaxe -> iron ore -> furnace -> smelted iron -> iron pickaxe
+#
+# Every milestone is a split on the timer. Nothing here is scripted location by
+# location: the bot searches the terrain around it for whatever the next step
+# needs, so it works on any normal (non-superflat) world.
 # ---------------------------------------------------------------------------
 
-settings:
-  # Passwords shorter or longer than this are rejected.
-  min-password-length: 8
-  max-password-length: 64
+run:
+  # World the run happens in. Must exist; a normal terrain world is expected.
+  world: world
+  # Name shown above the runner.
+  name: Runner
+  # Show the live timer and split count to everyone online.
+  boss-bar: true
 
-  # Seconds a player may stay connected without logging in. 0 = never kick.
-  login-timeout-seconds: 90
+  # Blocks moved per step, and how many ticks pass between steps.
+  # 0.35 blocks every 2 ticks is roughly a jog.
+  speed: 0.35
+  step-ticks: 2
+  # Ticks spent breaking one block. 10 ticks = half a second.
+  break-ticks: 10
+  # How far (in blocks, horizontally) the runner looks for trees, stone and ore.
+  search-radius: 24
+  # Dig down to this Y before searching for iron. Iron is common around y=40.
+  dig-to-y: 40
 
-  # Wrong passwords allowed before the player is kicked and locked out.
-  max-attempts: 5
-
-  # Seconds the lockout lasts after too many wrong passwords.
-  lockout-seconds: 300
-
-  limbo:
-    # Send unauthenticated players to their own empty void world instead of
-    # holding them where they joined. Logging in puts them back where they were.
-    enabled: true
-    # World name (also its folder in the server directory). Created automatically
-    # as an empty void world if it does not exist yet.
-    world-name: crackedauth_limbo
-    # Height the player is placed at inside the limbo world.
-    spawn-y: 65
-
-  session:
-    # Sign players back in automatically when they reconnect.
-    enabled: true
-    # How long the remembered session lasts, in minutes. 0 disables it.
-    minutes: 30
-    # Only resume a session when the player returns from the same IP address.
-    require-same-ip: true
-
-  # Kick players who never logged in when the plugin is disabled (/reload,
-  # restart, stop). Keep this true, otherwise a reload would unlock everyone.
-  kick-on-disable: true
-
-update:
-  # Look for a newer CrackedAuth jar on the project's GitHub releases.
-  enabled: true
-  # Repository that publishes releases, as owner/name.
-  repository: xyz-elyxion/Minecraft-Server-Plugin
-  # API base used to look releases up. Change only for GitHub Enterprise or a mirror.
-  api-base: https://api.github.com
-  # Download a newer jar and install it over the loaded plugin when the server
-  # stops, so the next start runs the new version. Nothing is swapped while the
-  # server is running.
-  auto-download: true
-  # Hours between checks. 0 = only check once at startup.
-  check-interval-hours: 6
+  # Resources the route needs. 4 logs is enough for a table, a pickaxe, sticks
+  # and furnace fuel with room to spare.
+  logs: 4
+  iron: 3
 
 messages:
-  prefix: "<dark_gray>[<gold>CrackedAuth</gold>]</dark_gray> "
-
+  prefix: "<dark_gray>[<red>Speedrun<dark_gray>]</dark_gray> "
+  started: "<green>The runner is off - timer started.</green>"
+  already-running: "<red>A run is already going. Use /speedrun stop first.</red>"
+  not-running: "<red>No run is going.</red>"
+  stopped: "<gray>Run stopped.</gray>"
+  no-world: "<red>Could not find the run world. Check run.world in config.yml.</red>"
+  reloaded: "<green>Configuration reloaded.</green>"
+  split: "<yellow><split></yellow> <gray>-</gray> <white><time></white>"
+  finished: "<gold>Run finished in <white><time></white>!</gold>"
+  status-running: "<gray>Running: <white><time></white></gray>"
+  status-finished: "<gray>Finished: <white><time></white></gray>"
+  status-line: "<gray>  <name>: <white><time></white></gray>"
+  status-none: "<gray>No splits yet.</gray>"
   no-permission: "<red>You do not have permission to do that.</red>"
-  player-only: "<red>That command can only be used in game.</red>"
-  already-logged-in: "<gray>You are already logged in.</gray>"
-  login-required: "<red>You must log in first.</red>"
-
-  register-usage: "<yellow>Usage: <white>/register <password> <password></white></yellow>"
-  register-already-registered: "<red>That name is already registered. Use <white>/login <password></white>.</red>"
-  register-password-mismatch: "<red>The two passwords do not match.</red>"
-  register-password-too-short: "<red>Your password must be at least <white><min></white> characters long.</red>"
-  register-password-too-long: "<red>Your password must be at most <white><max></white> characters long.</red>"
-  register-success: "<green>Account created. Welcome aboard!</green>"
-
-  login-usage: "<yellow>Usage: <white>/login <password></white></yellow>"
-  login-not-registered: "<red>That name is not registered. Use <white>/register <password> <password></white>.</red>"
-  login-wrong-password: "<red>Wrong password. <white><attempts></white> attempt(s) left before a lockout.</red>"
-  login-locked: "<red>Too many wrong passwords. Try again in <white><seconds></white>s.</red>"
-  login-success: "<green>Logged in successfully.</green>"
-
-  logout-success: "<gray>You have been logged out. Run <white>/login <password></white> to continue.</gray>"
-  logout-not-logged-in: "<red>You are not logged in.</red>"
-
-  changepassword-usage: "<yellow>Usage: <white>/changepassword <current> <new></white></yellow>"
-  changepassword-wrong: "<red>Your current password is wrong.</red>"
-  changepassword-success: "<green>Password changed.</green>"
-
-  session-resumed: "<green>Welcome back - you were signed in automatically.</green>"
-
-  prompt-register: "<gold>Welcome! Register with <white>/register <password> <password></white>.</gold>"
-  prompt-register-title: "<gold><bold>Register</bold></gold>"
-  prompt-register-subtitle: "<gray>/register <password> <password></gray>"
-  prompt-register-actionbar: "<gold>Register to play - <white><seconds>s</white> left</gold>"
-
-  prompt-login: "<gold>Welcome back! Log in with <white>/login <password></white>.</gold>"
-  prompt-login-title: "<gold><bold>Log in</bold></gold>"
-  prompt-login-subtitle: "<gray>/login <password></gray>"
-  prompt-login-actionbar: "<gold>Log in to play - <white><seconds>s</white> left</gold>"
-
-  auth-success-title: "<green><bold>Authenticated</bold></green>"
-  auth-success-subtitle: "<gray>Have fun!</gray>"
-
-  blocked-chat: "<red>Log in before chatting.</red>"
-  blocked-command: "<red>Log in before using commands.</red>"
-
-  timeout-kick: "<red>You took too long to log in (<white><seconds>s</white>).</red>"
-  too-many-attempts: "<red>Too many wrong passwords. Wait <white><seconds>s</white> and try again.</red>"
-  plugin-disabled-kick: "<red>The server is restarting. Please log in again shortly.</red>"
-
-  admin-usage: "<yellow>Usage: <white>/authadmin <unregister|forcelogin|setpassword|info|update|reload></white></yellow>"
-  admin-player-not-found: "<red>No account found for <white><player></white>.</red>"
-  admin-unregistered: "<green>Deleted the account of <white><player></white>.</green>"
-  admin-unregister-target: "<red>Your account was deleted by an administrator.</red>"
-  admin-forcelogin-done: "<green>Unlocked <white><player></white>.</green>"
-  admin-forcelogin-already: "<gray><player> is already logged in.</gray>"
-  admin-forcelogin-target: "<green>An administrator unlocked your session.</green>"
-  admin-setpassword-done: "<green>Set a new password for <white><player></white>.</green>"
-  admin-info: "<gray><player></gray> <dark_gray>|</dark_gray> <gray>registered:</gray> <white><registered></white> <dark_gray>|</dark_gray> <gray>last ip:</gray> <white><last-ip></white> <dark_gray>|</dark_gray> <gray>last login:</gray> <white><last-login></white> <dark_gray>|</dark_gray> <gray>online:</gray> <white><online></white> <dark_gray>|</dark_gray> <gray>authenticated:</gray> <white><authenticated></white>"
-  admin-reloaded: "<green>Configuration reloaded.</green>"
-
-  update-checking: "<gray>Checking GitHub for a newer CrackedAuth...</gray>"
-  update-none: "<green>You are running the latest CrackedAuth version.</green>"
-  update-available: "<gold>A newer CrackedAuth is available: <white><version></white> (you run <white><current></white>).</gold>"
-  update-downloaded: "<green>Downloaded CrackedAuth <white><version></white> as <white><file></white>; it will be installed when the server stops.</green>"
-  update-download-failed: "<red>Found CrackedAuth <white><version></white> but could not download it: <white><error></white></red>"
-  update-failed: "<red>Update check failed: <white><error></white></red>"
-  update-disabled: "<gray>The update checker is disabled in config.yml.</gray>"
+  usage: "<yellow>Usage: <white>/speedrun <start|stop|status|reload></white></yellow>"

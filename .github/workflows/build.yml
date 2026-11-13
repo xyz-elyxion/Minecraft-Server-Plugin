@@ -56,12 +56,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          j1=$(ls build/libs/CrackedAuth-*.jar)
+          j1=$(ls build/libs/SpeedrunAI-*.jar)
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             release="${GITHUB_REF_NAME}"
             if ! gh release view "$release" >/dev/null 2>&1; then
               gh release create "$release" \
-                --title "CrackedAuth ${release}" \
+                --title "SpeedrunAI ${release}" \
                 --notes "Built from ${GITHUB_SHA}." \
                 --target "${GITHUB_SHA}"
             fi

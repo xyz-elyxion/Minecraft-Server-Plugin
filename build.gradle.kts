@@ -2,7 +2,7 @@ plugins {
     java
 }
 
-group = "dev.crackedauth"
+group = "dev.speedrun"
 version = "1.0.0"
 
 repositories {
@@ -34,5 +34,5 @@ tasks.processResources {
 }
 
 tasks.jar {
-    archiveFileName.set("CrackedAuth-${project.version}.jar")
+    archiveFileName.set("SpeedrunAI-${project.version}.jar")
 }
