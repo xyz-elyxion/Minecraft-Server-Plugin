@@ -21,6 +21,7 @@ public final class SpeedrunPlugin extends JavaPlugin {
     private Runner runner;
     private BukkitTask task;
     private int hudTicks;
+    private int logTicks;
 
     @Override
     public void onEnable() {
@@ -96,6 +97,10 @@ public final class SpeedrunPlugin extends JavaPlugin {
         return runner == null ? "no runner" : runner.describe();
     }
 
+    public boolean jumpRunner(String phaseName) {
+        return runner != null && runner.jumpTo(phaseName);
+    }
+
     public void announceSplit(String name, double seconds) {
         messages.broadcast("split",
                 Placeholder.unparsed("split", name),
@@ -126,6 +131,12 @@ public final class SpeedrunPlugin extends JavaPlugin {
             if (hudTicks >= 5) {
                 hudTicks = 0;
                 run.update();
+            }
+            if (++logTicks >= 400) {
+                logTicks = 0;
+                if (runner != null) {
+                    getLogger().info(runner.describe());
+                }
             }
         }
     }

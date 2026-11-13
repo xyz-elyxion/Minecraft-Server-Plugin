@@ -2,6 +2,6 @@
 build/
 .idea/
 *.iml
-run/
+/run/
 __pycache__/
 *.pyc

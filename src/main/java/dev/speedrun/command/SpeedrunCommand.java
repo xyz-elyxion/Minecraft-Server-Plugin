@@ -15,7 +15,7 @@ import java.util.Map;
 /** /speedrun start|stop|status|reload */
 public final class SpeedrunCommand implements TabExecutor {
 
-    private static final List<String> ACTIONS = List.of("start", "stop", "status", "reload");
+    private static final List<String> ACTIONS = List.of("start", "stop", "status", "jump", "reload");
 
     private final SpeedrunPlugin plugin;
 
@@ -53,6 +53,19 @@ public final class SpeedrunCommand implements TabExecutor {
                 plugin.stopRun(true);
             }
             case "status" -> status(sender);
+            case "jump" -> {
+                if (args.length < 2) {
+                    plugin.messages().send(sender, "usage");
+                    return true;
+                }
+                if (plugin.run() == null) {
+                    plugin.messages().send(sender, "not-running");
+                    return true;
+                }
+                plugin.messages().send(sender,
+                        plugin.jumpRunner(args[1]) ? "jumped" : "no-such-phase",
+                        Placeholder.unparsed("phase", args[1]));
+            }
             case "reload" -> {
                 plugin.reloadConfig();
                 plugin.messages().reload();

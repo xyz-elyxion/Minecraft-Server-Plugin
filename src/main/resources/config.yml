@@ -29,11 +29,25 @@ run:
   search-radius: 24
   # Dig down to this Y before searching for iron. Iron is common around y=40.
   dig-to-y: 40
+  # Depth for the diamond leg. Diamonds are common below y=-50.
+  diamond-y: -54
 
   # Resources the route needs. 4 logs is enough for a table, a pickaxe, sticks
   # and furnace fuel with room to spare.
   logs: 4
   iron: 3
+  diamonds: 3
+  # Obsidian for the portal frame; a ruined portal has enough.
+  obsidian: 10
+  # One rod per blaze killed, two eyes per rod.
+  blaze-rods: 12
+  pearls: 12
+
+  # How far (in blocks) to look for a ruined portal, fortress or stronghold.
+  locate-radius: 4000
+  # Distance per travel step. Long distance travel is done in stepped teleports
+  # rather than real pathing, which is the one travel shortcut in this plugin.
+  travel-step: 32
 
 messages:
   prefix: "<dark_gray>[<red>Speedrun<dark_gray>]</dark_gray> "
@@ -43,6 +57,8 @@ messages:
   stopped: "<gray>Run stopped.</gray>"
   no-world: "<red>Could not find the run world. Check run.world in config.yml.</red>"
   reloaded: "<green>Configuration reloaded.</green>"
+  jumped: "<gray>Jumped the runner to phase <white><phase></white>.</gray>"
+  no-such-phase: "<red>No such phase: <white><phase></white>.</red>"
   split: "<yellow><split></yellow> <gray>-</gray> <white><time></white>"
   finished: "<gold>Run finished in <white><time></white>!</gold>"
   status-running: "<gray>Running: <white><time></white></gray>"
@@ -50,4 +66,4 @@ messages:
   status-line: "<gray>  <name>: <white><time></white></gray>"
   status-none: "<gray>No splits yet.</gray>"
   no-permission: "<red>You do not have permission to do that.</red>"
-  usage: "<yellow>Usage: <white>/speedrun <start|stop|status|reload></white></yellow>"
+  usage: "<yellow>Usage: <white>/speedrun <start|stop|status|jump <phase>|reload></white></yellow>"

@@ -8,7 +8,7 @@ author: SpeedrunAI
 commands:
   speedrun:
     description: Start, stop or inspect the speedrun.
-    usage: /speedrun <start|stop|status|reload>
+    usage: /speedrun <start|stop|status|jump <phase>|reload>
     aliases: [sr]
 
 permissions:
