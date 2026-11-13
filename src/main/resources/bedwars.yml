@@ -27,10 +27,12 @@ settings:
     y: 70
     z: 0.5
 
-  # AI opponents: husk bots that join the teams, fight, bridge and break beds.
+  # Speedrun AI: husk runners that go straight for the enemy bed. They ignore
+  # everything until that bed is gone, then hunt the survivors. Whoever reaches
+  # the bed first wins the race, and the run is timed from the game start.
   ai:
     enabled: true
-    # Bots added to each team when a game starts.
+    # Runners added to each team when a game starts.
     per-team: 2
     # Humans needed before the countdown starts while the AI is on.
     auto-start-players: 1
@@ -40,12 +42,14 @@ settings:
     damage: 3.0
     attack-cooldown-ticks: 18
     attack-range: 2.8
-    bed-range: 3.2
-    aggro-range: 16.0
-    # Blocks moved per AI step (four steps a second).
-    speed: 0.45
+    # Distance at which a runner starts swinging at the bed.
+    bed-range: 3.0
+    # Blocks moved per AI step (four steps a second). Tune the pace of the run.
+    speed: 0.7
     # Place wool under themselves so they can cross the void.
     bridge: true
+    # Hit whatever is already in reach on the way to the bed, without stopping.
+    fight-on-the-way: true
 
   generator-seconds:
     iron: 2
@@ -84,14 +88,14 @@ messages:
   already-playing: "<red>You are already in a game.</red>"
   countdown: "<gold>Starting in <white><seconds></white>...</gold>"
   started: "<green>Go! Protect your bed and destroy theirs.</green>"
-  bed-destroyed: "<team> <white>bed</white> was destroyed by <white><player></white>!"
+  bed-destroyed: "<team> <white>bed</white> was destroyed by <white><player></white>! <gray>(<white><time></white>)</gray>"
   bed-own: "<red>That is your own bed.</red>"
   bed-gone: "<gray>That bed is already gone.</gray>"
   eliminated-player: "<red>You were eliminated - your bed is gone.</red>"
   eliminated-team: "<team> <red>has been eliminated.</red>"
   eliminated-bot: "<white><player></white> <red>was eliminated.</red>"
   respawn: "<gray>Respawning in <white><seconds></white> seconds...</gray>"
-  victory: "<gold><team> wins the game!</gold>"
+  victory: "<gold><team> wins the game!</gold> <gray>Run finished in <white><time></white>.</gray>"
   void: "<red>You fell into the void.</red>"
   shop-title: "<dark_gray>Item Shop</dark_gray>"
   not-enough: "<red>You cannot afford that.</red>"
@@ -100,9 +104,9 @@ messages:
   started-command: "<green>Forced the game to start.</green>"
   no-permission: "<red>You do not have permission to do that.</red>"
   player-only: "<red>That command can only be used in game.</red>"
-  ai-on: "<green>AI opponents enabled - they join each team when a game starts.</green>"
-  ai-off: "<gray>AI opponents disabled and removed.</gray>"
-  ai-spawned: "<green>Spawned <white><count></white> AI opponent(s).</green>"
-  ai-cleared: "<gray>Removed all AI opponents.</gray>"
-  ai-status: "<gray>AI opponents are <white><state></white> (<white><count></white> active).</gray>"
+  ai-on: "<green>Speedrun AI enabled - runners join each team when a game starts.</green>"
+  ai-off: "<gray>Speedrun AI disabled and removed.</gray>"
+  ai-spawned: "<green>Spawned <white><count></white> speedrun bot(s) - run clock started.</green>"
+  ai-cleared: "<gray>Removed all speedrun bots.</gray>"
+  ai-status: "<gray>Speedrun AI is <white><state></white> (<white><count></white> running).</gray>"
   usage: "<yellow>Usage: <white>/bedwars <join|leave|shop|ai|start|reset|reload></white></yellow>"

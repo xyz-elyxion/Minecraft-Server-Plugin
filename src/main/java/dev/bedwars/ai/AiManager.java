@@ -33,18 +33,20 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Bedwars opponents that are not players.
+ * Speedrun opponents for Bedwars.
  *
- * <p>Each bot is a husk wearing its team's colour, added to a team as a normal
- * member so the existing bed/elimination/win rules apply to it unchanged. The
- * bots run on their own small controller instead of vanilla mob AI: every step
- * they pick the nearest enemy (player or bot), otherwise the nearest enemy bed,
- * otherwise the enemy base, then walk, bridge and swing.</p>
+ * <p>The bots play one way only: run the bed. From the first tick of the game
+ * every bot takes the shortest line to the enemy bed and breaks it, hitting
+ * whatever happens to stand in reach without slowing down. Only once the enemy
+ * bed is gone do they turn around and hunt the remaining players. Whoever gets
+ * there first wins the race, so the run is timed from the moment the game
+ * starts.</p>
  *
- * <p>Movement is a controlled teleport of a fraction of a block per step with
- * gravity off, and every step places team wool under the bot. That is what lets
- * them cross the void the same way a player would bridge, without a pathfinder
- * that cannot see across a gap.</p>
+ * <p>They are husks wearing their team's colour and they are added to a team as
+ * normal members, so the existing bed, elimination and win rules apply to them
+ * unchanged. They have no pathfinder: each step is a controlled move with
+ * gravity off and team wool placed underneath, which is how they cross the void
+ * the way a player would bridge.</p>
  */
 public final class AiManager {
 
@@ -67,6 +69,7 @@ public final class AiManager {
     private double bedRange;
     private double aggroRange;
     private boolean bridging;
+    private boolean fightOnTheWay;
     private int respawnSeconds;
 
     public AiManager(JavaPlugin plugin, Arena arena, BedwarsConfig config) {
@@ -99,11 +102,12 @@ public final class AiManager {
 
         this.damage = Math.max(0.5D, cfg.getDouble("ai.damage", defaultDamage));
         this.cooldownSteps = Math.max(1, cfg.getInt("ai.attack-cooldown-ticks", defaultCooldown) / STEP_TICKS);
-        this.speed = Math.max(0.05D, Math.min(1.5D, cfg.getDouble("ai.speed", 0.45D)));
+        this.speed = Math.max(0.05D, Math.min(1.5D, cfg.getDouble("ai.speed", 0.7D)));
         this.attackRange = Math.max(1.0D, cfg.getDouble("ai.attack-range", 2.8D));
-        this.bedRange = Math.max(1.0D, cfg.getDouble("ai.bed-range", 3.2D));
+        this.bedRange = Math.max(1.0D, cfg.getDouble("ai.bed-range", 3.0D));
         this.aggroRange = Math.max(2.0D, cfg.getDouble("ai.aggro-range", 16.0D));
         this.bridging = cfg.getBoolean("ai.bridge", true);
+        this.fightOnTheWay = cfg.getBoolean("ai.fight-on-the-way", true);
         this.respawnSeconds = Math.max(1, cfg.getInt("settings.respawn-seconds", 4));
         this.nameCounters.clear();
     }
@@ -131,7 +135,7 @@ public final class AiManager {
     // Spawning
     // ------------------------------------------------------------------
 
-    /** Fills every team with bots; used when a real game starts. */
+    /** Fills every team with speedrunners; used when a real game starts. */
     public void spawnForGame() {
         if (!enabled || perTeam <= 0) {
             return;
@@ -144,9 +148,10 @@ public final class AiManager {
         }
     }
 
-    /** Admin helper: populate the arena even when no game is running. */
+    /** Admin helper: run the bots outside a game, so the rush can be watched. */
     public int spawnTestBots() {
         despawnAll();
+        arena.beginRunClock();
         int count = Math.max(1, perTeam);
         int spawned = 0;
         for (Team team : arena.teams()) {
@@ -162,7 +167,7 @@ public final class AiManager {
     private String nextName(Team team) {
         int number = nameCounters.merge(team.id(), 1, Integer::sum);
         String label = team.id().substring(0, 1).toUpperCase(Locale.ROOT) + team.id().substring(1);
-        return label + " Bot " + number;
+        return label + " Runner " + number;
     }
 
     private boolean spawnBot(Team team, String name) {
@@ -199,7 +204,9 @@ public final class AiManager {
         if (equipment == null) {
             return;
         }
+        // A runner carries the two things a speedrun needs: a sword and a pickaxe.
         equipment.setItemInMainHand(new ItemStack(Material.IRON_SWORD));
+        equipment.setItemInOffHand(new ItemStack(Material.IRON_PICKAXE));
         Color color = teamColor(team);
         equipment.setHelmet(leather(Material.LEATHER_HELMET, color));
         equipment.setChestplate(leather(Material.LEATHER_CHESTPLATE, color));
@@ -230,7 +237,7 @@ public final class AiManager {
     }
 
     // ------------------------------------------------------------------
-    // Behaviour
+    // The run
     // ------------------------------------------------------------------
 
     public void tick() {
@@ -264,25 +271,10 @@ public final class AiManager {
         husk.setVelocity(new Vector(0.0D, 0.0D, 0.0D));
         bot.cooldown = Math.max(0, bot.cooldown - 1);
 
-        LivingEntity enemy = nearestEnemy(bot, current);
-        if (enemy != null) {
-            double distance = current.distance(enemy.getLocation());
-            if (distance > attackRange) {
-                walk(bot, husk, enemy.getLocation());
-                return;
-            }
-            husk.setRotation(yawTo(current, enemy.getLocation()), current.getPitch());
-            if (bot.cooldown > 0) {
-                return;
-            }
-            bot.cooldown = cooldownSteps;
-            enemy.damage(damage, husk);
-            husk.getWorld().playSound(current, Sound.ENTITY_PLAYER_ATTACK_STRONG, 0.6F, 1.0F);
-            return;
-        }
-
+        // The run: straight at the enemy bed, nothing else matters yet.
         Block bed = nearestEnemyBed(bot, current);
         if (bed != null) {
+            strikeOnTheWay(bot, husk, current);
             Location centre = bed.getLocation().add(0.5D, 0.0D, 0.5D);
             if (current.distance(centre) > bedRange) {
                 walk(bot, husk, centre);
@@ -292,10 +284,59 @@ public final class AiManager {
             return;
         }
 
+        // Bed gone: clean up whoever is left.
+        LivingEntity enemy = nearestEnemy(bot, current);
+        if (enemy != null) {
+            if (current.distance(enemy.getLocation()) > attackRange) {
+                walk(bot, husk, enemy.getLocation());
+                return;
+            }
+            attack(bot, husk, enemy);
+            return;
+        }
+
         Team fallback = fallbackTarget(bot);
         if (fallback != null) {
             walk(bot, husk, fallback.spawn());
         }
+    }
+
+    /** Hits anything already in reach without leaving the racing line. */
+    private void strikeOnTheWay(Bot bot, Husk husk, Location current) {
+        if (!fightOnTheWay || bot.cooldown > 0) {
+            return;
+        }
+        LivingEntity inReach = null;
+        double bestDistance = attackRange;
+        for (Team team : arena.teams()) {
+            if (team == bot.team) {
+                continue;
+            }
+            for (UUID member : team.members()) {
+                LivingEntity candidate = memberEntity(member);
+                if (candidate == null || candidate.isDead()) {
+                    continue;
+                }
+                double distance = current.distance(candidate.getLocation());
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    inReach = candidate;
+                }
+            }
+        }
+        if (inReach != null) {
+            attack(bot, husk, inReach);
+        }
+    }
+
+    private void attack(Bot bot, Husk husk, LivingEntity target) {
+        husk.setRotation(yawTo(husk.getLocation(), target.getLocation()), husk.getPitch());
+        if (bot.cooldown > 0) {
+            return;
+        }
+        bot.cooldown = cooldownSteps;
+        target.damage(damage, husk);
+        husk.getWorld().playSound(husk.getLocation(), Sound.ENTITY_PLAYER_ATTACK_STRONG, 0.6F, 1.0F);
     }
 
     private LivingEntity nearestEnemy(Bot bot, Location from) {
@@ -400,7 +441,7 @@ public final class AiManager {
         husk.teleport(next);
     }
 
-    /** Keeps a wool path under the bot, so it can cross the gaps between islands. */
+    /** Keeps a wool path under the runner, so it can cross the gaps between islands. */
     private void bridge(Bot bot, Location next) {
         Location below = new Location(next.getWorld(), next.getX(), next.getY() - 1.0D, next.getZ());
         Block block = below.getBlock();

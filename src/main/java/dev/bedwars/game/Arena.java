@@ -64,6 +64,7 @@ public final class Arena {
     private int countdown;
     private int elapsed;
     private Runnable gameStartHook = () -> { };
+    private long runStartedAt;
 
     public Arena(JavaPlugin plugin, BedwarsMessages messages, ArenaWorld world, BedwarsConfig bedwarsConfig) {
         this.plugin = plugin;
@@ -162,6 +163,7 @@ public final class Arena {
 
     private void resetState() {
         state = State.WAITING;
+        runStartedAt = 0L;
         countdown = countdownSeconds;
         elapsed = 0;
         for (Team team : teams) {
@@ -268,6 +270,7 @@ public final class Arena {
         }
         state = State.RUNNING;
         elapsed = 0;
+        runStartedAt = System.currentTimeMillis();
         for (Generator generator : generators) {
             generator.remaining = generator.intervalSeconds;
         }
@@ -402,6 +405,24 @@ public final class Arena {
         }
     }
 
+    /** Starts the run clock if it is not already going (used by the AI test spawn). */
+    public void beginRunClock() {
+        if (runStartedAt == 0L) {
+            runStartedAt = System.currentTimeMillis();
+        }
+    }
+
+    /** Elapsed run time as {@code m:ss.s}, or {@code null} when no run is going. */
+    public String runClock() {
+        if (runStartedAt == 0L) {
+            return null;
+        }
+        long millis = System.currentTimeMillis() - runStartedAt;
+        long minutes = millis / 60_000L;
+        double seconds = (millis % 60_000L) / 1000.0D;
+        return String.format(Locale.ROOT, "%d:%04.1f", minutes, seconds);
+    }
+
     /** Re-evaluates the win condition; also used by the AI after a bot dies. */
     public void checkVictory() {
         if (state != State.RUNNING) {
@@ -417,7 +438,9 @@ public final class Arena {
         }
         Team winner = alive.getFirst();
         state = State.ENDING;
-        messages.broadcast("victory", Placeholder.component("team", winner.component()));
+        messages.broadcast("victory",
+                Placeholder.component("team", winner.component()),
+                Placeholder.unparsed("time", clockOrDash()));
         Bukkit.getScheduler().runTaskLater(plugin, this::reset, 8 * 20L);
     }
 
@@ -443,6 +466,11 @@ public final class Arena {
         return true;
     }
 
+    private String clockOrDash() {
+        String clock = runClock();
+        return clock == null ? "--" : clock;
+    }
+
     /** Bed break by an AI bot, which has no {@link Player} to report as the breaker. */
     public boolean handleBotBedBreak(Team breakerTeam, String breakerName, Block block) {
         Team owner = teamAt(block.getLocation());
@@ -458,7 +486,8 @@ public final class Arena {
         world.removeBed(owner.bed());
         messages.broadcast("bed-destroyed",
                 Placeholder.component("team", owner.component()),
-                Placeholder.unparsed("player", breakerName));
+                Placeholder.unparsed("player", breakerName),
+                Placeholder.unparsed("time", clockOrDash()));
         if (owner.aliveCount() == 0) {
             eliminateTeam(owner);
         }
@@ -544,6 +573,7 @@ public final class Arena {
     public void reset() {
         cancelRespawns();
         state = State.WAITING;
+        runStartedAt = 0L;
         countdown = countdownSeconds;
         elapsed = 0;
         Location lobby = world.lobby();
@@ -573,6 +603,7 @@ public final class Arena {
 
     public void shutdown() {
         cancelRespawns();
+        runStartedAt = 0L;
         Location lobby = world.lobby();
         for (UUID member : List.copyOf(playerTeams.keySet())) {
             Player player = Bukkit.getPlayer(member);
